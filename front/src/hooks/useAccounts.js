@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { databases } from '../lib/appwrite';
 import { Query, ID } from 'appwrite';
+import { APPWRITE_CONFIG } from '../lib/constants';
 import { useAuth } from '../context/AuthContext';
 
 export const useAccounts = () => {
@@ -12,8 +13,8 @@ export const useAccounts = () => {
     queryFn: async () => {
       if (!userInfo) return [];
       const response = await databases.listDocuments(
-        import.meta.env.VITE_APPWRITE_DATABASE_ID,
-        import.meta.env.VITE_APPWRITE_ACCOUNTS_COLLECTION_ID,
+        APPWRITE_CONFIG.DATABASE_ID,
+        APPWRITE_CONFIG.ACCOUNTS_COLLECTION_ID,
         [Query.equal('profile', userInfo.$id), Query.equal('isArchived', false)]
       );
       return response.documents;
@@ -24,8 +25,8 @@ export const useAccounts = () => {
   const createAccountMutation = useMutation({
     mutationFn: async (newAccount) => {
       return await databases.createDocument(
-        import.meta.env.VITE_APPWRITE_DATABASE_ID,
-        import.meta.env.VITE_APPWRITE_ACCOUNTS_COLLECTION_ID,
+        APPWRITE_CONFIG.DATABASE_ID,
+        APPWRITE_CONFIG.ACCOUNTS_COLLECTION_ID,
         ID.unique(),
         {
           profile: userInfo.$id,

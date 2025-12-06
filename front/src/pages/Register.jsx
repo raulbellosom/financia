@@ -6,6 +6,7 @@ import { Input } from "../components/Input";
 import { Wallet } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -14,6 +15,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,10 +24,10 @@ export default function Register() {
     setLoading(false);
 
     if (result.success) {
-      toast.success("Account created successfully!");
+      toast.success(t("auth.successRegister"));
       navigate("/onboarding");
     } else {
-      toast.error(result.error || "Failed to create account");
+      toast.error(result.error || t("auth.errorRegister"));
     }
   };
 
@@ -47,9 +49,9 @@ export default function Register() {
             <Wallet className="w-8 h-8" />
           </motion.div>
           <h1 className="text-3xl font-bold tracking-tight text-white">
-            Create account
+            {t("auth.createAccount")}
           </h1>
-          <p className="text-zinc-400">Start managing your finances today</p>
+          <p className="text-zinc-400">{t("auth.startManaging")}</p>
         </div>
 
         <motion.form
@@ -60,7 +62,7 @@ export default function Register() {
           className="space-y-6 bg-zinc-900/50 p-8 rounded-3xl border border-zinc-800/50 backdrop-blur-xl"
         >
           <Input
-            label="Full Name"
+            label={t("auth.fullName")}
             type="text"
             placeholder="John Doe"
             value={name}
@@ -69,7 +71,7 @@ export default function Register() {
           />
 
           <Input
-            label="Email"
+            label={t("auth.email")}
             type="email"
             placeholder="name@example.com"
             value={email}
@@ -78,7 +80,7 @@ export default function Register() {
           />
 
           <Input
-            label="Password"
+            label={t("auth.password")}
             type="password"
             placeholder="••••••••"
             value={password}
@@ -91,16 +93,16 @@ export default function Register() {
             className="w-full bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold"
             isLoading={loading}
           >
-            Create account
+            {t("auth.createAccount")}
           </Button>
 
           <p className="text-center text-sm text-zinc-400">
-            Already have an account?{" "}
+            {t("auth.alreadyHaveAccount")}{" "}
             <Link
               to="/login"
               className="font-medium text-emerald-500 hover:text-emerald-400"
             >
-              Sign in
+              {t("auth.signIn")}
             </Link>
           </p>
         </motion.form>

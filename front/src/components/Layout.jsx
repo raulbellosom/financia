@@ -1,4 +1,3 @@
-import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Wallet,
@@ -7,24 +6,41 @@ import {
   LogOut,
   Users,
   Receipt,
+  Languages,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
+import { useLocation, Link } from "react-router-dom";
 
 export default function Layout({ children }) {
   const { pathname } = useLocation();
-  const { logout, userInfo } = useAuth();
+  const { logout, userInfo, changeUserLanguage } = useAuth();
+  const { i18n, t } = useTranslation();
 
   const navigation = [
-    { name: "Dashboard", href: "/", icon: LayoutDashboard },
-    { name: "Accounts", href: "/accounts", icon: Wallet },
-    { name: "Transactions", href: "/transactions", icon: ArrowRightLeft },
-    { name: "Receipts", href: "/receipts", icon: Receipt },
-    { name: "Profile", href: "/profile", icon: User },
+    { name: t("nav.dashboard"), href: "/", icon: LayoutDashboard },
+    { name: t("nav.accounts"), href: "/accounts", icon: Wallet },
+    {
+      name: t("nav.transactions"),
+      href: "/transactions",
+      icon: ArrowRightLeft,
+    },
+    { name: t("nav.receipts"), href: "/receipts", icon: Receipt },
+    { name: t("nav.profile"), href: "/profile", icon: User },
   ];
 
   if (userInfo?.role === "admin") {
-    navigation.push({ name: "Users", href: "/admin/users", icon: Users });
+    navigation.push({
+      name: t("nav.users"),
+      href: "/admin/users",
+      icon: Users,
+    });
   }
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === "en" ? "es" : "en";
+    changeUserLanguage(newLang);
+  };
 
   return (
     <div className="min-h-screen bg-black text-white flex">
@@ -59,6 +75,18 @@ export default function Layout({ children }) {
         </nav>
 
         <div className="mt-auto border-t border-zinc-800 pt-4">
+          {/* Language Switcher */}
+          <button
+            onClick={toggleLanguage}
+            className="w-full flex items-center gap-3 px-4 py-3 mb-2 text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-xl transition-all"
+            title="Switch Language"
+          >
+            <Languages size={20} />
+            <span className="text-sm font-medium">
+              {i18n.language === "es" ? "English" : "Español"}
+            </span>
+          </button>
+
           <div className="flex items-center gap-3 px-4 py-3 mb-2">
             <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden shrink-0">
               {userInfo?.avatarFileId ? (
@@ -92,7 +120,7 @@ export default function Layout({ children }) {
             className="w-full flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
           >
             <LogOut size={20} />
-            Sign Out
+            {t("nav.signOut")}
           </button>
         </div>
       </aside>

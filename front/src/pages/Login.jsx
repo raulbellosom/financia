@@ -6,6 +6,7 @@ import { Input } from "../components/Input";
 import { Wallet } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -13,6 +14,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,10 +23,10 @@ export default function Login() {
     setLoading(false);
 
     if (result.success) {
-      toast.success("Welcome back!");
+      toast.success(t("auth.successLogin"));
       navigate("/");
     } else {
-      toast.error(result.error || "Failed to login");
+      toast.error(result.error || t("auth.errorLogin"));
     }
   };
 
@@ -46,11 +48,9 @@ export default function Login() {
             <Wallet className="w-8 h-8" />
           </motion.div>
           <h1 className="text-3xl font-bold tracking-tight text-white">
-            Welcome back
+            {t("auth.welcomeBack")}
           </h1>
-          <p className="text-zinc-400">
-            Enter your credentials to access your account
-          </p>
+          <p className="text-zinc-400">{t("auth.enterCredentials")}</p>
         </div>
 
         <motion.form
@@ -61,7 +61,7 @@ export default function Login() {
           className="space-y-6 bg-zinc-900/50 p-8 rounded-3xl border border-zinc-800/50 backdrop-blur-xl"
         >
           <Input
-            label="Email"
+            label={t("auth.email")}
             type="email"
             placeholder="name@example.com"
             value={email}
@@ -70,7 +70,7 @@ export default function Login() {
           />
 
           <Input
-            label="Password"
+            label={t("auth.password")}
             type="password"
             placeholder="••••••••"
             value={password}
@@ -83,16 +83,16 @@ export default function Login() {
             className="w-full bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold"
             isLoading={loading}
           >
-            Sign in
+            {t("auth.signIn")}
           </Button>
 
           <p className="text-center text-sm text-zinc-400">
-            Don't have an account?{" "}
+            {t("auth.dontHaveAccount")}{" "}
             <Link
               to="/register"
               className="font-medium text-emerald-500 hover:text-emerald-400"
             >
-              Sign up
+              {t("auth.signUp")}
             </Link>
           </p>
         </motion.form>

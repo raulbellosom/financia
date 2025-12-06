@@ -5,10 +5,12 @@ import { Input } from "../components/Input";
 import PageLayout from "../components/PageLayout";
 import { Plus, Wallet, CreditCard, Banknote, X } from "lucide-react";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 export default function Accounts() {
   const { accounts, isLoading, createAccount } = useAccounts();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { t } = useTranslation();
   const [newAccount, setNewAccount] = useState({
     name: "",
     type: "cash",
@@ -25,7 +27,7 @@ export default function Accounts() {
         initialBalance: parseFloat(newAccount.initialBalance) || 0,
         currency: newAccount.currency,
       });
-      toast.success("Account created successfully");
+      toast.success(t("accounts.createSuccess"));
       setIsModalOpen(false);
       setNewAccount({
         name: "",
@@ -35,7 +37,7 @@ export default function Accounts() {
       });
     } catch (error) {
       console.error("Error creating account:", error);
-      toast.error("Failed to create account");
+      toast.error(t("accounts.createError"));
     }
   };
 
@@ -53,8 +55,8 @@ export default function Accounts() {
 
   return (
     <PageLayout
-      title="Accounts"
-      subtitle="Manage your bank accounts and wallets"
+      title={t("accounts.title")}
+      subtitle={t("accounts.subtitle")}
       icon={Wallet}
       action={
         <Button
@@ -62,12 +64,12 @@ export default function Accounts() {
           className="bg-emerald-500 hover:bg-emerald-600 text-zinc-950"
         >
           <Plus size={20} className="mr-2" />
-          Add Account
+          {t("accounts.addAccount")}
         </Button>
       }
     >
       {isLoading ? (
-        <div className="text-zinc-400">Loading accounts...</div>
+        <div className="text-zinc-400">{t("accounts.loading")}</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {accounts.map((account) => (
@@ -80,7 +82,7 @@ export default function Accounts() {
                   {getIcon(account.type)}
                 </div>
                 <span className="text-xs font-medium px-2 py-1 rounded-full bg-zinc-800 text-zinc-400 capitalize">
-                  {account.type}
+                  {t(`accounts.types.${account.type}`, account.type)}
                 </span>
               </div>
               <h3 className="text-lg font-semibold text-white mb-1">
@@ -97,7 +99,7 @@ export default function Accounts() {
 
           {accounts.length === 0 && (
             <div className="col-span-full text-center py-12 text-zinc-500">
-              No accounts found. Create one to get started!
+              {t("accounts.noAccounts")}
             </div>
           )}
         </div>
@@ -108,7 +110,9 @@ export default function Accounts() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="bg-zinc-900 w-full max-w-md rounded-3xl border border-zinc-800 p-6 space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">Add New Account</h2>
+              <h2 className="text-xl font-bold text-white">
+                {t("accounts.newAccountTitle")}
+              </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="text-zinc-400 hover:text-white"
@@ -120,11 +124,11 @@ export default function Accounts() {
             <form onSubmit={handleCreateAccount} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-zinc-400 mb-1">
-                  Account Name
+                  {t("accounts.nameLabel")}
                 </label>
                 <Input
                   required
-                  placeholder="e.g. Main Wallet"
+                  placeholder={t("accounts.namePlaceholder")}
                   value={newAccount.name}
                   onChange={(e) =>
                     setNewAccount({ ...newAccount, name: e.target.value })
@@ -134,7 +138,7 @@ export default function Accounts() {
 
               <div>
                 <label className="block text-sm font-medium text-zinc-400 mb-1">
-                  Type
+                  {t("accounts.typeLabel")}
                 </label>
                 <select
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
@@ -143,18 +147,18 @@ export default function Accounts() {
                     setNewAccount({ ...newAccount, type: e.target.value })
                   }
                 >
-                  <option value="cash">Cash</option>
-                  <option value="debit">Debit Card</option>
-                  <option value="credit">Credit Card</option>
-                  <option value="savings">Savings</option>
-                  <option value="wallet">Wallet</option>
-                  <option value="other">Other</option>
+                  <option value="cash">{t("accounts.types.cash")}</option>
+                  <option value="debit">{t("accounts.types.debit")}</option>
+                  <option value="credit">{t("accounts.types.credit")}</option>
+                  <option value="savings">{t("accounts.types.savings")}</option>
+                  <option value="wallet">{t("accounts.types.wallet")}</option>
+                  <option value="other">{t("accounts.types.other")}</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-zinc-400 mb-1">
-                  Initial Balance
+                  {t("accounts.initialBalanceLabel")}
                 </label>
                 <Input
                   type="number"
@@ -176,7 +180,7 @@ export default function Accounts() {
                   type="submit"
                   className="w-full bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold"
                 >
-                  Create Account
+                  {t("accounts.createButton")}
                 </Button>
               </div>
             </form>

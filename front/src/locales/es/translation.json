@@ -1,0 +1,194 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "view": "Ver",
+    "actions": "Acciones",
+    "seeAll": "Ver todo",
+    "untitled": "Sin título"
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "accounts": "Cuentas",
+    "transactions": "Movimientos",
+    "receipts": "Recibos",
+    "profile": "Perfil",
+    "users": "Usuarios",
+    "signOut": "Cerrar sesión"
+  },
+  "auth": {
+    "welcomeBack": "Bienvenido de nuevo",
+    "enterCredentials": "Ingresa tus credenciales para acceder",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "signIn": "Iniciar sesión",
+    "signUp": "Registrarse",
+    "dontHaveAccount": "¿No tienes cuenta?",
+    "createAccount": "Crear cuenta",
+    "startManaging": "Empieza a gestionar tus finanzas hoy",
+    "fullName": "Nombre completo",
+    "alreadyHaveAccount": "¿Ya tienes cuenta?",
+    "successLogin": "¡Bienvenido!",
+    "errorLogin": "Error al iniciar sesión",
+    "successRegister": "¡Cuenta creada exitosamente!",
+    "errorRegister": "Error al crear cuenta"
+  },
+  "dashboard": {
+    "hello": "Hola, {{name}}",
+    "subtitle": "Aquí está tu resumen financiero",
+    "totalBalance": "Balance Total",
+    "incomeRecent": "Ingresos (Recientes)",
+    "expensesRecent": "Gastos (Recientes)",
+    "recentActivity": "Actividad Reciente",
+    "noActivity": "Sin movimientos recientes"
+  },
+  "receipts": {
+    "title": "Recibos",
+    "subtitle": "Gestiona y rastrea tus recibos",
+    "upload": "Subir Recibo",
+    "noReceipts": "No hay recibos subidos",
+    "noReceiptsDesc": "Sube tu primer recibo para empezar a rastrear gastos de tus documentos.",
+    "uploadSuccess": "Recibo subido exitosamente",
+    "uploadError": "Error al subir recibo",
+    "deleteTitle": "Eliminar Recibo",
+    "deleteDesc": "¿Estás seguro de que quieres eliminar este recibo? Esta acción no se puede deshacer.",
+    "deleteSuccess": "Recibo eliminado exitosamente",
+    "deleteError": "Error al eliminar recibo"
+  },
+  "accounts": {
+    "title": "Cuentas",
+    "subtitle": "Gestiona tus cuentas bancarias y carteras",
+    "addAccount": "Agregar Cuenta",
+    "loading": "Cargando cuentas...",
+    "noAccounts": "No se encontraron cuentas. ¡Crea una para empezar!",
+    "newAccountTitle": "Agregar Nueva Cuenta",
+    "nameLabel": "Nombre de la Cuenta",
+    "namePlaceholder": "ej. Cartera Principal",
+    "typeLabel": "Tipo",
+    "initialBalanceLabel": "Balance Inicial",
+    "createButton": "Crear Cuenta",
+    "types": {
+      "cash": "Efectivo",
+      "debit": "Tarjeta de Débito",
+      "credit": "Tarjeta de Crédito",
+      "savings": "Ahorros",
+      "wallet": "Cartera",
+      "other": "Otro"
+    },
+    "createSuccess": "Cuenta creada exitosamente",
+    "createError": "Error al crear cuenta"
+  },
+  "transactions": {
+    "title": "Movimientos",
+    "subtitle": "Gestiona tus ingresos y gastos",
+    "newTransaction": "Nuevo Movimiento",
+    "loading": "Cargando movimientos...",
+    "noTransactions": "Aún no hay movimientos",
+    "noTransactionsDesc": "Tu historial de movimientos aparecerá aquí. Empieza agregando uno."
+  },
+  "profile": {
+    "title": "Mi Perfil",
+    "emailNotVerified": "Correo no verificado",
+    "verifyEmailDesc": "Por favor verifica tu correo para acceder a todas las funciones y asegurar tu cuenta.",
+    "sendVerification": "Enviar Correo de Verificación",
+    "verificationSent": "¡Correo de verificación enviado! Revisa tu bandeja de entrada.",
+    "uploadPhoto": "Haz clic en el icono de cámara para subir nueva foto",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "country": "País",
+    "state": "Estado",
+    "currency": "Moneda",
+    "language": "Idioma",
+    "timezone": "Zona Horaria",
+    "selectTimezone": "Seleccionar Zona Horaria",
+    "saveChanges": "Guardar Cambios",
+    "saving": "Guardando...",
+    "updateSuccess": "Perfil actualizado exitosamente",
+    "updateError": "Error al actualizar perfil",
+    "uploadError": "Error al subir avatar"
+  },
+  "admin": {
+    "title": "Gestión de Usuarios",
+    "subtitle": "Administra usuarios y roles del sistema",
+    "addUser": "Agregar Usuario",
+    "searchPlaceholder": "Buscar usuarios...",
+    "columns": {
+      "user": "Usuario",
+      "role": "Rol",
+      "status": "Estado",
+      "joined": "Unido",
+      "actions": "Acciones"
+    },
+    "noUsers": "No se encontraron usuarios",
+    "active": "Activo",
+    "blocked": "Bloqueado",
+    "accessDenied": "Acceso Denegado",
+    "accessDeniedDesc": "No tienes permiso para ver esta página.",
+    "modalAddTitle": "Agregar Nuevo Usuario",
+    "modalEditTitle": "Editar Usuario",
+    "tabs": {
+      "auth": "Info de Autenticación",
+      "profile": "Info de Perfil"
+    },
+    "userId": "ID de Usuario",
+    "registered": "Registrado",
+    "emailVerification": "Verificación de Correo",
+    "verified": "Verificado",
+    "unverified": "No Verificado",
+    "markVerified": "Marcar como Verificado",
+    "profilePicture": "Foto de Perfil",
+    "managedByUser": "Gestionado por el usuario",
+    "cancel": "Cancelar",
+    "save": "Guardar Cambios",
+    "createUser": "Crear Usuario"
+  },
+  "status": {
+    "uploaded": "Subido",
+    "processing": "Procesando",
+    "processed": "Procesado",
+    "failed": "Fallido"
+  },
+  "components": {
+    "transactionModal": {
+      "title": "Nuevo Movimiento",
+      "type": "Tipo",
+      "expense": "Gasto",
+      "income": "Ingreso",
+      "amount": "Monto",
+      "description": "Descripción",
+      "descPlaceholder": "¿Para qué es esto?",
+      "date": "Fecha",
+      "account": "Cuenta",
+      "selectAccount": "Selecciona una cuenta",
+      "create": "Crear Movimiento",
+      "success": "Movimiento creado exitosamente",
+      "error": "Error al crear movimiento"
+    },
+    "deleteModal": {
+      "defaultTitle": "Eliminar Elemento",
+      "defaultDesc": "¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer.",
+      "cancel": "Cancelar",
+      "delete": "Eliminar"
+    },
+    "locationSelector": {
+      "label": "Ubicación",
+      "selectCountry": "Seleccionar País",
+      "search": "Buscar {{mode}}...",
+      "modeCountry": "país",
+      "modeState": "estado",
+      "back": "Volver a Países",
+      "noResults": "No se encontraron resultados"
+    },
+    "imageCropper": {
+      "zoom": "Zoom",
+      "rotate": "Rotar 90°",
+      "flipH": "Voltear Horizontal",
+      "flipV": "Voltear Vertical",
+      "cancel": "Cancelar",
+      "apply": "Aplicar Recorte"
+    }
+  }
+}

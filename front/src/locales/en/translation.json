@@ -1,0 +1,194 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "actions": "Actions",
+    "seeAll": "See all",
+    "untitled": "Untitled"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "accounts": "Accounts",
+    "transactions": "Transactions",
+    "receipts": "Receipts",
+    "profile": "Profile",
+    "users": "Users",
+    "signOut": "Sign Out"
+  },
+  "auth": {
+    "welcomeBack": "Welcome back",
+    "enterCredentials": "Enter your credentials to access your account",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "dontHaveAccount": "Don't have an account?",
+    "createAccount": "Create account",
+    "startManaging": "Start managing your finances today",
+    "fullName": "Full Name",
+    "alreadyHaveAccount": "Already have an account?",
+    "successLogin": "Welcome back!",
+    "errorLogin": "Failed to login",
+    "successRegister": "Account created successfully!",
+    "errorRegister": "Failed to create account"
+  },
+  "dashboard": {
+    "hello": "Hello, {{name}}",
+    "subtitle": "Here's your financial overview",
+    "totalBalance": "Total Balance",
+    "incomeRecent": "Income (Recent)",
+    "expensesRecent": "Expenses (Recent)",
+    "recentActivity": "Recent Activity",
+    "noActivity": "No recent transactions"
+  },
+  "receipts": {
+    "title": "Receipts",
+    "subtitle": "Manage and track your receipts",
+    "upload": "Upload Receipt",
+    "noReceipts": "No receipts uploaded",
+    "noReceiptsDesc": "Upload your first receipt to start tracking expenses from your documents.",
+    "uploadSuccess": "Receipt uploaded successfully",
+    "uploadError": "Failed to upload receipt",
+    "deleteTitle": "Delete Receipt",
+    "deleteDesc": "Are you sure you want to delete this receipt? This action cannot be undone.",
+    "deleteSuccess": "Receipt deleted successfully",
+    "deleteError": "Failed to delete receipt"
+  },
+  "accounts": {
+    "title": "Accounts",
+    "subtitle": "Manage your bank accounts and wallets",
+    "addAccount": "Add Account",
+    "loading": "Loading accounts...",
+    "noAccounts": "No accounts found. Create one to get started!",
+    "newAccountTitle": "Add New Account",
+    "nameLabel": "Account Name",
+    "namePlaceholder": "e.g. Main Wallet",
+    "typeLabel": "Type",
+    "initialBalanceLabel": "Initial Balance",
+    "createButton": "Create Account",
+    "types": {
+      "cash": "Cash",
+      "debit": "Debit Card",
+      "credit": "Credit Card",
+      "savings": "Savings",
+      "wallet": "Wallet",
+      "other": "Other"
+    },
+    "createSuccess": "Account created successfully",
+    "createError": "Failed to create account"
+  },
+  "transactions": {
+    "title": "Transactions",
+    "subtitle": "Manage your income and expenses",
+    "newTransaction": "New Transaction",
+    "loading": "Loading transactions...",
+    "noTransactions": "No transactions yet",
+    "noTransactionsDesc": "Your transaction history will appear here. Start by adding a transaction."
+  },
+  "profile": {
+    "title": "My Profile",
+    "emailNotVerified": "Email not verified",
+    "verifyEmailDesc": "Please verify your email address to access all features and secure your account.",
+    "sendVerification": "Send Verification Email",
+    "verificationSent": "Verification email sent! Please check your inbox.",
+    "uploadPhoto": "Click camera icon to upload new photo",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "country": "Country",
+    "state": "State",
+    "currency": "Currency",
+    "language": "Language",
+    "timezone": "Timezone",
+    "selectTimezone": "Select Timezone",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "updateSuccess": "Profile updated successfully",
+    "updateError": "Failed to update profile",
+    "uploadError": "Failed to upload avatar"
+  },
+  "admin": {
+    "title": "User Management",
+    "subtitle": "Manage system users and roles",
+    "addUser": "Add User",
+    "searchPlaceholder": "Search users...",
+    "columns": {
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "joined": "Joined",
+      "actions": "Actions"
+    },
+    "noUsers": "No users found",
+    "active": "Active",
+    "blocked": "Blocked",
+    "accessDenied": "Access Denied",
+    "accessDeniedDesc": "You do not have permission to view this page.",
+    "modalAddTitle": "Add New User",
+    "modalEditTitle": "Edit User",
+    "tabs": {
+      "auth": "Auth Info",
+      "profile": "Profile Info"
+    },
+    "userId": "User ID",
+    "registered": "Registered",
+    "emailVerification": "Email Verification",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "markVerified": "Mark as Verified",
+    "profilePicture": "Profile Picture",
+    "managedByUser": "Managed by user",
+    "cancel": "Cancel",
+    "save": "Save Changes",
+    "createUser": "Create User"
+  },
+  "status": {
+    "uploaded": "Uploaded",
+    "processing": "Processing",
+    "processed": "Processed",
+    "failed": "Failed"
+  },
+  "components": {
+    "transactionModal": {
+      "title": "New Transaction",
+      "type": "Type",
+      "expense": "Expense",
+      "income": "Income",
+      "amount": "Amount",
+      "description": "Description",
+      "descPlaceholder": "What is this for?",
+      "date": "Date",
+      "account": "Account",
+      "selectAccount": "Select an account",
+      "create": "Create Transaction",
+      "success": "Transaction created successfully",
+      "error": "Failed to create transaction"
+    },
+    "deleteModal": {
+      "defaultTitle": "Delete Item",
+      "defaultDesc": "Are you sure you want to delete this item? This action cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "locationSelector": {
+      "label": "Location",
+      "selectCountry": "Select Country",
+      "search": "Search {{mode}}...",
+      "modeCountry": "country",
+      "modeState": "state",
+      "back": "Back to Countries",
+      "noResults": "No results found"
+    },
+    "imageCropper": {
+      "zoom": "Zoom",
+      "rotate": "Rotate 90°",
+      "flipH": "Flip Horizontal",
+      "flipV": "Flip Vertical",
+      "cancel": "Cancel",
+      "apply": "Apply Crop"
+    }
+  }
+}

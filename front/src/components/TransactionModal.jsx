@@ -5,10 +5,12 @@ import { Button } from "./Button";
 import { useTransactions } from "../hooks/useTransactions";
 import { useAccounts } from "../hooks/useAccounts";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 export default function TransactionModal({ isOpen, onClose }) {
   const { createTransaction, isCreating } = useTransactions();
   const { accounts } = useAccounts();
+  const { t } = useTranslation();
 
   const [formData, setFormData] = useState({
     type: "expense",
@@ -28,7 +30,7 @@ export default function TransactionModal({ isOpen, onClose }) {
         amount: parseFloat(formData.amount),
         date: new Date(formData.date).toISOString(),
       });
-      toast.success("Transaction created successfully");
+      toast.success(t("components.transactionModal.success"));
       // Reset form
       setFormData({
         type: "expense",
@@ -40,7 +42,7 @@ export default function TransactionModal({ isOpen, onClose }) {
       onClose();
     } catch (error) {
       console.error(error);
-      toast.error("Failed to create transaction");
+      toast.error(t("components.transactionModal.error"));
     }
   };
 
@@ -59,13 +61,15 @@ export default function TransactionModal({ isOpen, onClose }) {
           <X size={24} />
         </button>
 
-        <h2 className="text-xl font-bold text-white mb-6">New Transaction</h2>
+        <h2 className="text-xl font-bold text-white mb-6">
+          {t("components.transactionModal.title")}
+        </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-zinc-400 mb-2 block">
-                Type
+                {t("components.transactionModal.type")}
               </label>
               <select
                 name="type"
@@ -73,13 +77,17 @@ export default function TransactionModal({ isOpen, onClose }) {
                 onChange={handleChange}
                 className="w-full h-11 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 text-sm text-zinc-100 focus:border-indigo-500 focus:outline-none"
               >
-                <option value="expense">Expense</option>
-                <option value="income">Income</option>
+                <option value="expense">
+                  {t("components.transactionModal.expense")}
+                </option>
+                <option value="income">
+                  {t("components.transactionModal.income")}
+                </option>
               </select>
             </div>
 
             <Input
-              label="Amount"
+              label={t("components.transactionModal.amount")}
               type="number"
               step="0.01"
               placeholder="0.00"
@@ -92,8 +100,8 @@ export default function TransactionModal({ isOpen, onClose }) {
           </div>
 
           <Input
-            label="Description"
-            placeholder="What is this for?"
+            label={t("components.transactionModal.description")}
+            placeholder={t("components.transactionModal.descPlaceholder")}
             name="description"
             value={formData.description}
             onChange={handleChange}
@@ -101,7 +109,7 @@ export default function TransactionModal({ isOpen, onClose }) {
           />
 
           <Input
-            label="Date"
+            label={t("components.transactionModal.date")}
             type="date"
             name="date"
             value={formData.date}
@@ -111,7 +119,7 @@ export default function TransactionModal({ isOpen, onClose }) {
 
           <div>
             <label className="text-sm font-medium text-zinc-400 mb-2 block">
-              Account
+              {t("components.transactionModal.account")}
             </label>
             <select
               name="account"
@@ -120,7 +128,9 @@ export default function TransactionModal({ isOpen, onClose }) {
               required
               className="w-full h-11 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 text-sm text-zinc-100 focus:border-indigo-500 focus:outline-none"
             >
-              <option value="">Select an account</option>
+              <option value="">
+                {t("components.transactionModal.selectAccount")}
+              </option>
               {accounts.map((acc) => (
                 <option key={acc.$id} value={acc.$id}>
                   {acc.name} (${acc.currentBalance})
@@ -131,7 +141,7 @@ export default function TransactionModal({ isOpen, onClose }) {
 
           <div className="pt-4">
             <Button type="submit" className="w-full" isLoading={isCreating}>
-              Create Transaction
+              {t("components.transactionModal.create")}
             </Button>
           </div>
         </form>

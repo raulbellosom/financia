@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react';
-import Cropper from 'react-easy-crop';
-import { Button } from './Button';
-import { RotateCw, FlipHorizontal, FlipVertical } from 'lucide-react';
+import { useState, useCallback } from "react";
+import Cropper from "react-easy-crop";
+import { Button } from "./Button";
+import { RotateCw, FlipHorizontal, FlipVertical } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function ImageCropper({ imageSrc, onCropComplete, onCancel }) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -9,6 +10,7 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }) {
   const [rotation, setRotation] = useState(0);
   const [flip, setFlip] = useState({ horizontal: false, vertical: false });
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const { t } = useTranslation();
 
   const onCropChange = (crop) => {
     setCrop(crop);
@@ -18,16 +20,19 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }) {
     setZoom(zoom);
   };
 
-  const onCropCompleteCallback = useCallback((croppedArea, croppedAreaPixels) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  }, []);
+  const onCropCompleteCallback = useCallback(
+    (croppedArea, croppedAreaPixels) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
 
   const createCroppedImage = async () => {
     try {
       const croppedImage = await getCroppedImg(
-        imageSrc, 
-        croppedAreaPixels, 
-        rotation, 
+        imageSrc,
+        croppedAreaPixels,
+        rotation,
         flip
       );
       onCropComplete(croppedImage);
@@ -55,12 +60,14 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }) {
             `scale(${zoom})`,
             `scaleX(${flip.horizontal ? -1 : 1})`,
             `scaleY(${flip.vertical ? -1 : 1})`,
-          ].join(' ')}
+          ].join(" ")}
         />
       </div>
       <div className="p-4 md:p-6 bg-zinc-900 border-t border-zinc-800 space-y-4 safe-area-bottom">
         <div className="flex items-center gap-4">
-          <span className="text-sm text-zinc-400 w-12">Zoom</span>
+          <span className="text-sm text-zinc-400 w-12">
+            {t("components.imageCropper.zoom")}
+          </span>
           <input
             type="range"
             value={zoom}
@@ -74,41 +81,58 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }) {
         </div>
 
         <div className="flex gap-4 justify-center py-2">
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             size="icon"
             onClick={() => setRotation((r) => r + 90)}
-            title="Rotate 90°"
+            title={t("components.imageCropper.rotate")}
             className="h-12 w-12 rounded-full bg-zinc-800 border-zinc-700"
           >
             <RotateCw size={24} />
           </Button>
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             size="icon"
-            onClick={() => setFlip(f => ({ ...f, horizontal: !f.horizontal }))}
-            className={`h-12 w-12 rounded-full border-zinc-700 ${flip.horizontal ? 'bg-emerald-500/20 text-emerald-500 border-emerald-500/50' : 'bg-zinc-800'}`}
-            title="Flip Horizontal"
+            onClick={() =>
+              setFlip((f) => ({ ...f, horizontal: !f.horizontal }))
+            }
+            className={`h-12 w-12 rounded-full border-zinc-700 ${
+              flip.horizontal
+                ? "bg-emerald-500/20 text-emerald-500 border-emerald-500/50"
+                : "bg-zinc-800"
+            }`}
+            title={t("components.imageCropper.flipH")}
           >
             <FlipHorizontal size={24} />
           </Button>
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             size="icon"
-            onClick={() => setFlip(f => ({ ...f, vertical: !f.vertical }))}
-            className={`h-12 w-12 rounded-full border-zinc-700 ${flip.vertical ? 'bg-emerald-500/20 text-emerald-500 border-emerald-500/50' : 'bg-zinc-800'}`}
-            title="Flip Vertical"
+            onClick={() => setFlip((f) => ({ ...f, vertical: !f.vertical }))}
+            className={`h-12 w-12 rounded-full border-zinc-700 ${
+              flip.vertical
+                ? "bg-emerald-500/20 text-emerald-500 border-emerald-500/50"
+                : "bg-zinc-800"
+            }`}
+            title={t("components.imageCropper.flipV")}
           >
             <FlipVertical size={24} />
           </Button>
         </div>
 
         <div className="flex gap-3 pt-2">
-          <Button variant="secondary" onClick={onCancel} className="flex-1 h-12 text-base">
-            Cancel
+          <Button
+            variant="secondary"
+            onClick={onCancel}
+            className="flex-1 h-12 text-base"
+          >
+            {t("components.imageCropper.cancel")}
           </Button>
-          <Button onClick={createCroppedImage} className="flex-1 h-12 text-base">
-            Apply Crop
+          <Button
+            onClick={createCroppedImage}
+            className="flex-1 h-12 text-base"
+          >
+            {t("components.imageCropper.apply")}
           </Button>
         </div>
       </div>
@@ -119,9 +143,9 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }) {
 const createImage = (url) =>
   new Promise((resolve, reject) => {
     const image = new Image();
-    image.addEventListener('load', () => resolve(image));
-    image.addEventListener('error', (error) => reject(error));
-    image.setAttribute('crossOrigin', 'anonymous'); 
+    image.addEventListener("load", () => resolve(image));
+    image.addEventListener("error", (error) => reject(error));
+    image.setAttribute("crossOrigin", "anonymous");
     image.src = url;
   });
 
@@ -150,8 +174,8 @@ async function getCroppedImg(
   flip = { horizontal: false, vertical: false }
 ) {
   const image = await createImage(imageSrc);
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
 
   if (!ctx) {
     return null;
@@ -199,6 +223,6 @@ async function getCroppedImg(
   return new Promise((resolve, reject) => {
     canvas.toBlob((file) => {
       resolve(file);
-    }, 'image/jpeg');
+    }, "image/jpeg");
   });
 }

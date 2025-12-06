@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { databases } from '../lib/appwrite';
 import { Query, ID } from 'appwrite';
+import { APPWRITE_CONFIG } from '../lib/constants';
 import { useAuth } from '../context/AuthContext';
 
 export const useTransactions = (limit = 100) => {
@@ -12,8 +13,8 @@ export const useTransactions = (limit = 100) => {
     queryFn: async () => {
       if (!userInfo) return [];
       const response = await databases.listDocuments(
-        import.meta.env.VITE_APPWRITE_DATABASE_ID,
-        import.meta.env.VITE_APPWRITE_TRANSACTIONS_COLLECTION_ID,
+        APPWRITE_CONFIG.DATABASE_ID,
+        APPWRITE_CONFIG.TRANSACTIONS_COLLECTION_ID,
         [
           Query.equal('profile', userInfo.$id),
           Query.equal('isDeleted', false),
@@ -29,8 +30,8 @@ export const useTransactions = (limit = 100) => {
   const createTransactionMutation = useMutation({
     mutationFn: async (newTransaction) => {
       return await databases.createDocument(
-        import.meta.env.VITE_APPWRITE_DATABASE_ID,
-        import.meta.env.VITE_APPWRITE_TRANSACTIONS_COLLECTION_ID,
+        APPWRITE_CONFIG.DATABASE_ID,
+        APPWRITE_CONFIG.TRANSACTIONS_COLLECTION_ID,
         ID.unique(),
         {
           profile: userInfo.$id,

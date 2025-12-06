@@ -4,15 +4,17 @@ import { Button } from "../components/Button";
 import TransactionModal from "../components/TransactionModal";
 import PageLayout from "../components/PageLayout";
 import { useTransactions } from "../hooks/useTransactions";
+import { useTranslation } from "react-i18next";
 
 export default function Transactions() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { transactions, isLoading } = useTransactions();
+  const { t } = useTranslation();
 
   return (
     <PageLayout
-      title="Transactions"
-      subtitle="Manage your income and expenses"
+      title={t("transactions.title")}
+      subtitle={t("transactions.subtitle")}
       icon={ArrowRightLeft}
       action={
         <Button
@@ -20,13 +22,13 @@ export default function Transactions() {
           className="bg-emerald-500 hover:bg-emerald-600 text-zinc-950"
         >
           <Plus size={20} className="mr-2" />
-          New Transaction
+          {t("transactions.newTransaction")}
         </Button>
       }
     >
       {isLoading ? (
         <div className="text-center text-zinc-500 py-12">
-          Loading transactions...
+          {t("transactions.loading")}
         </div>
       ) : transactions.length === 0 ? (
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-12 text-center">
@@ -34,11 +36,10 @@ export default function Transactions() {
             <ArrowRightLeft size={32} />
           </div>
           <h3 className="text-xl font-medium text-white mb-2">
-            No transactions yet
+            {t("transactions.noTransactions")}
           </h3>
           <p className="text-zinc-400 max-w-md mx-auto">
-            Your transaction history will appear here. Start by adding a
-            transaction.
+            {t("transactions.noTransactionsDesc")}
           </p>
         </div>
       ) : (
@@ -68,7 +69,7 @@ export default function Transactions() {
                 </div>
                 <div>
                   <p className="font-medium text-white">
-                    {tx.description || "Untitled"}
+                    {tx.description || t("common.untitled")}
                   </p>
                   <p className="text-sm text-zinc-500">
                     {new Date(tx.date).toLocaleDateString()}

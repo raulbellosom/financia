@@ -1,0 +1,4 @@
+appwrite
+pytesseract
+Pillow
+requests
