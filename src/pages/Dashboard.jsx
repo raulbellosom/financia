@@ -1,9 +1,10 @@
 import { useAuth } from '../context/AuthContext';
 import { useAccounts } from '../hooks/useAccounts';
 import { useTransactions } from '../hooks/useTransactions';
-import { Wallet, TrendingUp, TrendingDown, Activity, Plus, ArrowRightLeft } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown, Activity, Plus, ArrowRightLeft, LayoutDashboard } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/Button';
+import PageLayout from '../components/PageLayout';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -23,21 +24,18 @@ export default function Dashboard() {
   const isLoading = accountsLoading || transactionsLoading;
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
-      {/* Header */}
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">
-            Hello, {user?.name?.split(' ')[0] || 'User'}
-          </h1>
-          <p className="text-zinc-400">Here's your financial overview</p>
-        </div>
+    <PageLayout
+      title={`Hello, ${user?.name?.split(' ')[0] || 'User'}`}
+      subtitle="Here's your financial overview"
+      icon={LayoutDashboard}
+      action={
         <Link to="/transactions">
           <Button size="icon" className="rounded-full bg-emerald-500 hover:bg-emerald-600 text-zinc-950">
             <Plus size={24} />
           </Button>
         </Link>
-      </header>
+      }
+    >
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -123,6 +121,7 @@ export default function Dashboard() {
           )}
         </div>
       </div>
-    </div>
+
+    </PageLayout>
   );
 }

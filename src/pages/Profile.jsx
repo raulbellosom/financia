@@ -5,6 +5,7 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import LocationSelector from '../components/LocationSelector';
 import ImageCropper from '../components/ImageCropper';
+import PageLayout from '../components/PageLayout';
 import { User, Save, Camera, Loader2, LogOut, AlertTriangle, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -177,16 +178,10 @@ export default function Profile() {
   if (!userInfo) return <div>Loading profile...</div>;
 
   return (
-    <div className="p-6 max-w-2xl mx-auto mb-20 md:mb-0">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-500">
-            <User size={24} />
-          </div>
-          <h1 className="text-2xl font-bold text-white">My Profile</h1>
-        </div>
-        
-        {/* Mobile Sign Out */}
+    <PageLayout
+      title="My Profile"
+      icon={User}
+      action={
         <div className="md:hidden">
           <Button 
             variant="ghost" 
@@ -198,7 +193,9 @@ export default function Profile() {
             Sign Out
           </Button>
         </div>
-      </div>
+      }
+    >
+      <div className="max-w-2xl mx-auto mb-20 md:mb-0">
 
       {/* Email Verification Warning */}
       {!user.emailVerification && (
@@ -326,6 +323,7 @@ export default function Profile() {
           onCancel={() => setIsCropping(false)}
         />
       )}
-    </div>
+      </div>
+    </PageLayout>
   );
 }

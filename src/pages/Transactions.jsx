@@ -1,24 +1,103 @@
-import { ArrowRightLeft } from 'lucide-react';
+import { useState } from "react";
+import { ArrowRightLeft, Plus, TrendingUp, TrendingDown } from "lucide-react";
+import { Button } from "../components/Button";
+import TransactionModal from "../components/TransactionModal";
+import PageLayout from "../components/PageLayout";
+import { useTransactions } from "../hooks/useTransactions";
 
 export default function Transactions() {
-  return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-500">
-          <ArrowRightLeft size={24} />
-        </div>
-        <h1 className="text-2xl font-bold text-white">Transactions</h1>
-      </div>
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { transactions, isLoading } = useTransactions();
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-12 text-center">
-        <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4 text-zinc-500">
-          <ArrowRightLeft size={32} />
+  return (
+    <PageLayout
+      title="Transactions"
+      subtitle="Manage your income and expenses"
+      icon={ArrowRightLeft}
+      action={
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          className="bg-emerald-500 hover:bg-emerald-600 text-zinc-950"
+        >
+          <Plus size={20} className="mr-2" />
+          New Transaction
+        </Button>
+      }
+    >
+      {isLoading ? (
+        <div className="text-center text-zinc-500 py-12">
+          Loading transactions...
         </div>
-        <h3 className="text-xl font-medium text-white mb-2">No transactions yet</h3>
-        <p className="text-zinc-400 max-w-md mx-auto">
-          Your transaction history will appear here. Start by adding a transaction.
-        </p>
-      </div>
-    </div>
+      ) : transactions.length === 0 ? (
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-12 text-center">
+          <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4 text-zinc-500">
+            <ArrowRightLeft size={32} />
+          </div>
+          <h3 className="text-xl font-medium text-white mb-2">
+            No transactions yet
+          </h3>
+          <p className="text-zinc-400 max-w-md mx-auto">
+            Your transaction history will appear here. Start by adding a
+            transaction.
+          </p>
+        </div>
+      ) : (
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+          {transactions.map((tx) => (
+            <div
+              key={tx.$id}
+              className="flex items-center justify-between p-4 border-b border-zinc-800 last:border-0 hover:bg-zinc-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    tx.type === "income"
+                      ? "bg-blue-500/10 text-blue-500"
+                      : tx.type === "expense"
+                      ? "bg-red-500/10 text-red-500"
+                      : "bg-zinc-800 text-zinc-400"
+                  }`}
+                >
+                  {tx.type === "income" ? (
+                    <TrendingUp size={20} />
+                  ) : tx.type === "expense" ? (
+                    <TrendingDown size={20} />
+                  ) : (
+                    <ArrowRightLeft size={20} />
+                  )}
+                </div>
+                <div>
+                  <p className="font-medium text-white">
+                    {tx.description || "Untitled"}
+                  </p>
+                  <p className="text-sm text-zinc-500">
+                    {new Date(tx.date).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+              <span
+                className={`font-bold ${
+                  tx.type === "income"
+                    ? "text-blue-500"
+                    : tx.type === "expense"
+                    ? "text-white"
+                    : "text-zinc-400"
+                }`}
+              >
+                {tx.type === "income" ? "+" : "-"}$
+                {tx.amount.toLocaleString("es-MX", {
+                  minimumFractionDigits: 2,
+                })}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <TransactionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
+    </PageLayout>
   );
 }

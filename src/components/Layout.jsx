@@ -1,21 +1,29 @@
-import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Wallet, ArrowRightLeft, User, LogOut, Users, Receipt } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { Link, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Wallet,
+  ArrowRightLeft,
+  User,
+  LogOut,
+  Users,
+  Receipt,
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export default function Layout({ children }) {
   const { pathname } = useLocation();
   const { logout, userInfo } = useAuth();
 
   const navigation = [
-    { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-    { name: 'Accounts', href: '/accounts', icon: Wallet },
-    { name: 'Transactions', href: '/transactions', icon: ArrowRightLeft },
-    { name: 'Receipts', href: '/receipts', icon: Receipt },
-    { name: 'Profile', href: '/profile', icon: User },
+    { name: "Dashboard", href: "/", icon: LayoutDashboard },
+    { name: "Accounts", href: "/accounts", icon: Wallet },
+    { name: "Transactions", href: "/transactions", icon: ArrowRightLeft },
+    { name: "Receipts", href: "/receipts", icon: Receipt },
+    { name: "Profile", href: "/profile", icon: User },
   ];
 
-  if (userInfo?.role === 'admin') {
-    navigation.push({ name: 'Users', href: '/admin/users', icon: Users });
+  if (userInfo?.role === "admin") {
+    navigation.push({ name: "Users", href: "/admin/users", icon: Users });
   }
 
   return (
@@ -38,9 +46,9 @@ export default function Layout({ children }) {
                 key={item.name}
                 to={item.href}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                  isActive 
-                    ? 'bg-emerald-500/10 text-emerald-500 font-medium' 
-                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                  isActive
+                    ? "bg-emerald-500/10 text-emerald-500 font-medium"
+                    : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
                 }`}
               >
                 <Icon size={20} />
@@ -52,10 +60,14 @@ export default function Layout({ children }) {
 
         <div className="mt-auto border-t border-zinc-800 pt-4">
           <div className="flex items-center gap-3 px-4 py-3 mb-2">
-            <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden shrink-0">
               {userInfo?.avatarFileId ? (
-                <img 
-                  src={`https://appwrite.racoondevs.com/v1/storage/buckets/${import.meta.env.VITE_APPWRITE_AVATARS_BUCKET_ID}/files/${userInfo.avatarFileId}/view?project=${import.meta.env.VITE_APPWRITE_PROJECT_ID}`}
+                <img
+                  src={`https://appwrite.racoondevs.com/v1/storage/buckets/${
+                    import.meta.env.VITE_APPWRITE_AVATARS_BUCKET_ID
+                  }/files/${userInfo.avatarFileId}/view?project=${
+                    import.meta.env.VITE_APPWRITE_PROJECT_ID
+                  }`}
                   alt="Avatar"
                   className="w-full h-full object-cover"
                 />
@@ -74,8 +86,8 @@ export default function Layout({ children }) {
               </p>
             </div>
           </div>
-          
-          <button 
+
+          <button
             onClick={logout}
             className="w-full flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
           >
@@ -96,7 +108,7 @@ export default function Layout({ children }) {
                 key={item.name}
                 to={item.href}
                 className={`flex flex-col items-center gap-1 ${
-                  isActive ? 'text-emerald-500' : 'text-zinc-500'
+                  isActive ? "text-emerald-500" : "text-zinc-500"
                 }`}
               >
                 <Icon size={24} />

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
+import PageLayout from '../components/PageLayout';
 import { Users, Plus, Search, MoreVertical, Shield, Ban, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -285,17 +286,17 @@ export default function AdminUsers() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-white mb-1">User Management</h1>
-          <p className="text-zinc-400">Manage system users and roles</p>
-        </div>
+    <PageLayout
+      title="User Management"
+      subtitle="Manage system users and roles"
+      icon={Users}
+      action={
         <Button onClick={() => setIsCreateModalOpen(true)}>
           <Plus size={20} className="mr-2" />
           Add User
         </Button>
-      </div>
+      }
+    >
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
         <div className="p-4 border-b border-zinc-800 flex gap-4">
@@ -573,7 +574,7 @@ export default function AdminUsers() {
           </div>
         </div>
       )}
-    </div>
+    </PageLayout>
   );
 }
 
