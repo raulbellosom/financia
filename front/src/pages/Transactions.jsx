@@ -5,11 +5,13 @@ import TransactionModal from "../components/TransactionModal";
 import PageLayout from "../components/PageLayout";
 import { useTransactions } from "../hooks/useTransactions";
 import { useTranslation } from "react-i18next";
+import { useDateFormatter } from "../hooks/useDateFormatter";
 
 export default function Transactions() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { transactions, isLoading } = useTransactions();
   const { t } = useTranslation();
+  const { formatDate } = useDateFormatter();
 
   return (
     <PageLayout
@@ -71,9 +73,7 @@ export default function Transactions() {
                   <p className="font-medium text-white">
                     {tx.description || t("common.untitled")}
                   </p>
-                  <p className="text-sm text-zinc-500">
-                    {new Date(tx.date).toLocaleDateString()}
-                  </p>
+                  <p className="text-sm text-zinc-500">{formatDate(tx.date)}</p>
                 </div>
               </div>
               <span

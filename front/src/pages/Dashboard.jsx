@@ -14,12 +14,14 @@ import { Link } from "react-router-dom";
 import { Button } from "../components/Button";
 import PageLayout from "../components/PageLayout";
 import { useTranslation } from "react-i18next";
+import { useDateFormatter } from "../hooks/useDateFormatter";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { accounts, isLoading: accountsLoading } = useAccounts();
   const { transactions, isLoading: transactionsLoading } = useTransactions(5);
   const { t } = useTranslation();
+  const { formatDate } = useDateFormatter();
 
   const totalBalance = accounts.reduce(
     (sum, acc) => sum + acc.currentBalance,
@@ -166,7 +168,7 @@ export default function Dashboard() {
                       {tx.description || t("common.untitled")}
                     </p>
                     <p className="text-sm text-zinc-500">
-                      {new Date(tx.date).toLocaleDateString()}
+                      {formatDate(tx.date)}
                     </p>
                   </div>
                 </div>

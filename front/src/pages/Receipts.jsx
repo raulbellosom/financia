@@ -11,11 +11,13 @@ import toast from "react-hot-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ID, Query } from "appwrite";
 import { useTranslation } from "react-i18next";
+import { useDateFormatter } from "../hooks/useDateFormatter";
 
 // Extracted Card Component for better state handling
 const ReceiptCard = ({ receipt, onDeleteRequest, onViewRequest }) => {
   const [imageError, setImageError] = useState(false);
   const { t } = useTranslation();
+  const { formatDate } = useDateFormatter();
 
   // Helper inside component to access environment variables easily
   const getFilePreviewUrl = (fileId) => {
@@ -85,7 +87,7 @@ const ReceiptCard = ({ receipt, onDeleteRequest, onViewRequest }) => {
             {t(`status.${receipt.status}`, receipt.status)}
           </span>
           <span className="text-xs text-zinc-500">
-            {new Date(receipt.$createdAt).toLocaleDateString()}
+            {formatDate(receipt.$createdAt)}
           </span>
         </div>
         {receipt.ocrText && (

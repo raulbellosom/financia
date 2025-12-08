@@ -12,7 +12,8 @@ WORKDIR /app
 
 # Instalar dependencias de Python
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && sed -i "s/print(f'Warning: {warning}', file=sys.stderr)/pass/" /usr/local/lib/python3.9/site-packages/appwrite/client.py
 
 # Copiar el código
 COPY main.py .
