@@ -15,6 +15,9 @@ import {
   LogOut,
   AlertTriangle,
   Mail,
+  Lock,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -45,6 +48,17 @@ export default function Profile() {
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [verificationSent, setVerificationSent] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
+  // Password change state
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const { logout } = useAuth();
 
@@ -197,6 +211,47 @@ export default function Profile() {
     } catch (error) {
       console.error("Error sending verification email:", error);
       toast.error("Failed to send verification email");
+    }
+  };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+
+    // Validation
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error(t("profile.passwordMismatch"));
+      return;
+    }
+
+    if (passwordData.newPassword.length < 8) {
+      toast.error(t("profile.passwordTooShort"));
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      // Update password in Appwrite Auth
+      await account.updatePassword(
+        passwordData.newPassword,
+        passwordData.currentPassword
+      );
+
+      toast.success(t("profile.passwordChangeSuccess"));
+      // Reset form
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      if (error.code === 401) {
+        toast.error(t("profile.incorrectPassword"));
+      } else {
+        toast.error(t("profile.passwordChangeError"));
+      }
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -405,6 +460,130 @@ export default function Profile() {
                 {updateProfileMutation.isPending
                   ? t("profile.saving")
                   : t("profile.saveChanges")}
+              </Button>
+            </div>
+          </form>
+        </div>
+
+        {/* Password Change Section */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mt-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+              <Lock className="text-emerald-500" size={20} />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">
+                {t("profile.changePassword")}
+              </h3>
+              <p className="text-sm text-zinc-400">{t("profile.subtitle")}</p>
+            </div>
+          </div>
+
+          <form onSubmit={handlePasswordChange} className="space-y-4">
+            {/* Current Password */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-2">
+                {t("profile.currentPassword")}
+              </label>
+              <div className="relative">
+                <input
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={passwordData.currentPassword}
+                  onChange={(e) =>
+                    setPasswordData({
+                      ...passwordData,
+                      currentPassword: e.target.value,
+                    })
+                  }
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 pr-12 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                >
+                  {showCurrentPassword ? (
+                    <EyeOff size={20} />
+                  ) : (
+                    <Eye size={20} />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* New Password */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-2">
+                {t("profile.newPassword")}
+              </label>
+              <div className="relative">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  value={passwordData.newPassword}
+                  onChange={(e) =>
+                    setPasswordData({
+                      ...passwordData,
+                      newPassword: e.target.value,
+                    })
+                  }
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 pr-12 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  required
+                  minLength={8}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                >
+                  {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-2">
+                {t("profile.confirmPassword")}
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={passwordData.confirmPassword}
+                  onChange={(e) =>
+                    setPasswordData({
+                      ...passwordData,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 pr-12 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  required
+                  minLength={8}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff size={20} />
+                  ) : (
+                    <Eye size={20} />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-zinc-800 flex justify-end">
+              <Button
+                type="submit"
+                disabled={changingPassword}
+                className="bg-emerald-500 hover:bg-emerald-600 text-zinc-950"
+              >
+                <Lock size={18} className="mr-2" />
+                {changingPassword
+                  ? t("profile.saving")
+                  : t("profile.changePassword")}
               </Button>
             </div>
           </form>

@@ -1,25 +1,46 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Input } from "./Input";
-import { Button } from "./Button";
+import { Button } from "./ui/Button";
+import { Select } from "./ui/Select";
+import { DatePicker } from "./ui/DatePicker";
 import { useTransactions } from "../hooks/useTransactions";
 import { useAccounts } from "../hooks/useAccounts";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 
-export default function TransactionModal({ isOpen, onClose }) {
+export default function TransactionModal({ isOpen, onClose, initialDate }) {
   const { createTransaction, isCreating } = useTransactions();
   const { accounts } = useAccounts();
   const { t } = useTranslation();
+
+  const getInitialDate = () => {
+    if (initialDate) {
+      const date = new Date(initialDate);
+      return date.toISOString().split("T")[0];
+    }
+    return new Date().toISOString().split("T")[0];
+  };
 
   const [formData, setFormData] = useState({
     type: "expense",
     amount: "",
     description: "",
-    date: new Date().toISOString().split("T")[0],
+    date: getInitialDate(),
     account: "",
     installments: 1,
   });
+
+  // Update date when initialDate changes
+  useEffect(() => {
+    if (initialDate) {
+      const date = new Date(initialDate);
+      setFormData((prev) => ({
+        ...prev,
+        date: date.toISOString().split("T")[0],
+      }));
+    }
+  }, [initialDate]);
 
   const selectedAccount = accounts.find((a) => a.$id === formData.account);
   const isCreditCard = selectedAccount?.type === "credit";
@@ -57,6 +78,26 @@ export default function TransactionModal({ isOpen, onClose }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const typeOptions = [
+    { value: "expense", label: t("components.transactionModal.expense") },
+    { value: "income", label: t("components.transactionModal.income") },
+  ];
+
+  const accountOptions = accounts.map((acc) => ({
+    value: acc.$id,
+    label: `${acc.name} ($${acc.currentBalance})`,
+  }));
+
+  const installmentOptions = [
+    { value: "1", label: "1 (Contado)" },
+    { value: "3", label: "3 Meses" },
+    { value: "6", label: "6 Meses" },
+    { value: "9", label: "9 Meses" },
+    { value: "12", label: "12 Meses" },
+    { value: "18", label: "18 Meses" },
+    { value: "24", label: "24 Meses" },
+  ];
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md p-6 relative">
@@ -72,25 +113,15 @@ export default function TransactionModal({ isOpen, onClose }) {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-zinc-400 mb-2 block">
-                {t("components.transactionModal.type")}
-              </label>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-                className="w-full h-11 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 text-sm text-zinc-100 focus:border-indigo-500 focus:outline-none"
-              >
-                <option value="expense">
-                  {t("components.transactionModal.expense")}
-                </option>
-                <option value="income">
-                  {t("components.transactionModal.income")}
-                </option>
-              </select>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Select
+              label={t("components.transactionModal.type")}
+              value={formData.type}
+              onChange={(e) =>
+                setFormData({ ...formData, type: e.target.value })
+              }
+              options={typeOptions}
+            />
 
             <Input
               label={t("components.transactionModal.amount")}
@@ -114,57 +145,37 @@ export default function TransactionModal({ isOpen, onClose }) {
             required
           />
 
-          <Input
+          <DatePicker
             label={t("components.transactionModal.date")}
-            type="date"
-            name="date"
             value={formData.date}
-            onChange={handleChange}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
             required
           />
 
-          <div>
-            <label className="text-sm font-medium text-zinc-400 mb-2 block">
-              {t("components.transactionModal.account")}
-            </label>
-            <select
-              name="account"
-              value={formData.account}
-              onChange={handleChange}
-              required
-              className="w-full h-11 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 text-sm text-zinc-100 focus:border-indigo-500 focus:outline-none"
-            >
-              <option value="">
-                {t("components.transactionModal.selectAccount")}
-              </option>
-              {accounts.map((acc) => (
-                <option key={acc.$id} value={acc.$id}>
-                  {acc.name} (${acc.currentBalance})
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label={t("components.transactionModal.account")}
+            value={formData.account}
+            onChange={(e) =>
+              setFormData({ ...formData, account: e.target.value })
+            }
+            options={accountOptions}
+            placeholder={t("components.transactionModal.selectAccount")}
+          />
 
           {isCreditCard && formData.type === "expense" && (
-            <div>
-              <label className="text-sm font-medium text-zinc-400 mb-2 block">
-                {t("components.transactionModal.installments") || "Meses (MSI)"}
-              </label>
-              <select
-                name="installments"
-                value={formData.installments}
-                onChange={handleChange}
-                className="w-full h-11 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 text-sm text-zinc-100 focus:border-indigo-500 focus:outline-none"
-              >
-                <option value="1">1 (Contado)</option>
-                <option value="3">3 Meses</option>
-                <option value="6">6 Meses</option>
-                <option value="9">9 Meses</option>
-                <option value="12">12 Meses</option>
-                <option value="18">18 Meses</option>
-                <option value="24">24 Meses</option>
-              </select>
-            </div>
+            <Select
+              label={
+                t("components.transactionModal.installments") || "Meses (MSI)"
+              }
+              value={formData.installments.toString()}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  installments: parseInt(e.target.value),
+                })
+              }
+              options={installmentOptions}
+            />
           )}
 
           <div className="pt-4">

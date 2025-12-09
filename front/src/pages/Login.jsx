@@ -3,10 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
-import { Wallet } from "lucide-react";
+import { Languages } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import Logo from "../components/Logo";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -14,7 +15,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,8 +31,24 @@ export default function Login() {
     }
   };
 
+  const toggleLanguage = () => {
+    const newLang = i18n.language === "en" ? "es" : "en";
+    i18n.changeLanguage(newLang);
+  };
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 p-4 relative">
+      {/* Language Toggle - Top Right */}
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        onClick={toggleLanguage}
+        className="absolute top-4 right-4 p-2 rounded-full bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors flex items-center gap-2"
+      >
+        <Languages size={20} />
+        <span className="text-sm font-medium uppercase">{i18n.language}</span>
+      </motion.button>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -43,9 +60,9 @@ export default function Login() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", duration: 0.6, delay: 0.2 }}
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-500 mb-4"
+            className="inline-flex items-center justify-center w-20 h-20 mb-4"
           >
-            <Wallet className="w-8 h-8" />
+            <Logo className="w-full h-full" />
           </motion.div>
           <h1 className="text-3xl font-bold tracking-tight text-white">
             {t("auth.welcomeBack")}

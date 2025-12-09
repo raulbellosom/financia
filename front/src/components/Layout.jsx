@@ -10,13 +10,18 @@ import {
   Languages,
   Tags,
   CalendarClock,
+  Calendar,
   ChevronDown,
+  Menu,
+  X,
+  Download,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 import { useLocation, Link } from "react-router-dom";
 import Logo from "./Logo";
 import { useRuleProcessor } from "../hooks/useRuleProcessor";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Layout({ children }) {
   const { pathname } = useLocation();
@@ -24,6 +29,9 @@ export default function Layout({ children }) {
   const { i18n, t } = useTranslation();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
 
   // Process recurring rules
   useRuleProcessor();
@@ -36,28 +44,76 @@ export default function Layout({ children }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
+  // PWA Install Prompt
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      // Show prompt occasionally or based on some logic
+      // For now, show it if it hasn't been dismissed recently
+      const hasDismissed = localStorage.getItem("pwa-prompt-dismissed");
+      if (!hasDismissed) {
+        setShowInstallPrompt(true);
+      }
+    };
+
+    window.addEventListener("beforeinstallprompt", handler);
+
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === "accepted") {
+      setDeferredPrompt(null);
+      setShowInstallPrompt(false);
+    }
+  };
+
+  const handleDismissInstall = () => {
+    setShowInstallPrompt(false);
+    // Dismiss for 7 days
+    localStorage.setItem("pwa-prompt-dismissed", Date.now().toString());
+  };
+
   const navigation = [
     { name: t("nav.dashboard"), href: "/", icon: LayoutDashboard },
-    { name: t("nav.accounts"), href: "/accounts", icon: Wallet },
-    { name: t("nav.categories"), href: "/categories", icon: Tags },
-    { name: t("nav.recurring"), href: "/recurring-rules", icon: CalendarClock },
     {
       name: t("nav.transactions"),
       href: "/transactions",
       icon: ArrowRightLeft,
     },
     { name: t("nav.receipts"), href: "/receipts", icon: Receipt },
+    { name: t("nav.calendar"), href: "/calendar", icon: Calendar },
+    { name: t("nav.accounts"), href: "/accounts", icon: Wallet },
+    { name: t("nav.categories"), href: "/categories", icon: Tags },
+    { name: t("nav.recurring"), href: "/recurring-rules", icon: CalendarClock },
   ];
 
   // Desktop navigation includes Profile
-  const desktopNavigation = [
-    ...navigation,
-    // Profile moved to user menu
-    // { name: t("nav.profile"), href: "/profile", icon: User },
-  ];
+  const desktopNavigation = [...navigation];
 
   if (userInfo?.role === "admin") {
     desktopNavigation.push({
+      name: t("nav.users"),
+      href: "/admin/users",
+      icon: Users,
+    });
+  }
+
+  // Mobile Navigation Split
+  const bottomNavItems = navigation.slice(0, 4);
+  const moreNavItems = navigation.slice(4);
+
+  if (userInfo?.role === "admin") {
+    moreNavItems.push({
       name: t("nav.users"),
       href: "/admin/users",
       icon: Users,
@@ -291,29 +347,183 @@ export default function Layout({ children }) {
         </div>
 
         {/* Content */}
-        <div className="flex-1">{children}</div>
+        <div className="flex-1 pb-20 md:pb-0">{children}</div>
+
+        {/* PWA Install Prompt */}
+        <AnimatePresence>
+          {showInstallPrompt && (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              className="fixed bottom-24 left-4 right-4 md:bottom-4 md:left-auto md:right-4 md:w-96 bg-zinc-900 border border-zinc-800 p-4 rounded-xl shadow-2xl z-50 flex items-center gap-4"
+            >
+              <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center shrink-0">
+                <Download className="text-emerald-500" size={24} />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-medium text-white text-sm">Instalar App</h3>
+                <p className="text-xs text-zinc-400">
+                  Instala Financia para una mejor experiencia
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleDismissInstall}
+                  className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 transition-colors"
+                >
+                  <X size={18} />
+                </button>
+                <button
+                  onClick={handleInstallClick}
+                  className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium rounded-lg transition-colors"
+                >
+                  Instalar
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Mobile Bottom Nav */}
-        <div className="md:hidden sticky bottom-0 left-0 right-0 bg-zinc-950 border-t border-zinc-800 p-4 z-50">
-          <nav className="flex justify-around">
-            {navigation.map((item) => {
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-zinc-950 border-t border-zinc-800 pb-safe z-40">
+          <nav className="flex justify-around items-center h-16">
+            {bottomNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex flex-col items-center gap-1 ${
+                  className={`flex flex-col items-center gap-1 w-full h-full justify-center active:scale-95 transition-transform ${
                     isActive ? "text-emerald-500" : "text-zinc-500"
                   }`}
                 >
-                  <Icon size={20} />
+                  <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
                   <span className="text-[10px] font-medium">{item.name}</span>
                 </Link>
               );
             })}
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className={`flex flex-col items-center gap-1 w-full h-full justify-center active:scale-95 transition-transform ${
+                isMobileMenuOpen ? "text-emerald-500" : "text-zinc-500"
+              }`}
+            >
+              <Menu size={24} />
+              <span className="text-[10px] font-medium">{t("nav.more")}</span>
+            </button>
           </nav>
         </div>
+
+        {/* Mobile More Menu Drawer */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 md:hidden"
+              />
+              <motion.div
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={{ top: 0, bottom: 0.5 }}
+                onDragEnd={(e, { offset, velocity }) => {
+                  if (offset.y > 100 || velocity.y > 0.5) {
+                    setIsMobileMenuOpen(false);
+                  }
+                }}
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed bottom-0 left-0 right-0 bg-zinc-900 rounded-t-3xl z-50 md:hidden border-t border-zinc-800 max-h-[85vh] overflow-y-auto touch-none"
+              >
+                <div className="w-12 h-1.5 bg-zinc-700 rounded-full mx-auto mt-3 mb-6" />
+
+                <div className="px-6 pb-8 space-y-6">
+                  <div className="grid grid-cols-4 gap-4">
+                    {moreNavItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.name}
+                          to={item.href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={`flex flex-col items-center gap-2 p-4 rounded-2xl transition-colors ${
+                            isActive
+                              ? "bg-emerald-500/10 text-emerald-500"
+                              : "bg-zinc-800/50 text-zinc-400 hover:bg-zinc-800"
+                          }`}
+                        >
+                          <Icon size={24} />
+                          <span className="text-xs font-medium text-center">
+                            {item.name}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+
+                  <div className="h-px bg-zinc-800" />
+
+                  <div className="space-y-2">
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-4 p-4 rounded-xl bg-zinc-800/30 text-zinc-300 hover:bg-zinc-800 transition-colors"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center">
+                        <User size={20} />
+                      </div>
+                      <span className="font-medium">{t("nav.profile")}</span>
+                    </Link>
+
+                    <button
+                      onClick={toggleLanguage}
+                      className="w-full flex items-center gap-4 p-4 rounded-xl bg-zinc-800/30 text-zinc-300 hover:bg-zinc-800 transition-colors"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center">
+                        <Languages size={20} />
+                      </div>
+                      <span className="font-medium">
+                        {i18n.language === "es"
+                          ? "Cambiar a Inglés"
+                          : "Switch to Spanish"}
+                      </span>
+                    </button>
+
+                    {deferredPrompt && (
+                      <button
+                        onClick={handleInstallClick}
+                        className="w-full flex items-center gap-4 p-4 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                          <Download size={20} />
+                        </div>
+                        <span className="font-medium">Instalar Aplicación</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={logout}
+                      className="w-full flex items-center gap-4 p-4 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                        <LogOut size={20} />
+                      </div>
+                      <span className="font-medium">{t("nav.signOut")}</span>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

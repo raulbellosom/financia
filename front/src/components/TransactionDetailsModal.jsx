@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   X,
   Calendar,
-  DollarSign,
+  Tag,
   CreditCard,
   Repeat,
   FileText,
@@ -146,7 +146,9 @@ export default function TransactionDetailsModal({
 
         <div className="mb-6">
           <h2 className="text-xl font-bold text-white mb-1">
-            {transaction.description || t("common.noDescription")}
+            {transaction.description === "recurring.payment"
+              ? t("transactions.recurringPayment")
+              : transaction.description || t("common.noDescription")}
           </h2>
           <p
             className={`text-2xl font-bold ${
@@ -174,7 +176,7 @@ export default function TransactionDetailsModal({
             </div>
             <div className="bg-zinc-800/50 p-3 rounded-xl">
               <div className="flex items-center gap-2 text-zinc-400 text-xs mb-1">
-                <DollarSign size={14} />
+                <Tag size={14} />
                 <span>{t("common.category")}</span>
               </div>
               {readOnly ? (

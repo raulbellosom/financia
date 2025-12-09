@@ -32,7 +32,10 @@
     "copied": "Copiado",
     "notes": "Notas",
     "saved": "Guardado",
-    "error": "Error"
+    "error": "Error",
+    "paymentCount": "Pago #{{count}}",
+    "paymentHistory": "Historial de Pagos",
+    "nextPayment": "Próximo Pago"
   },
   "nav": {
     "dashboard": "Panel",
@@ -40,9 +43,12 @@
     "categories": "Categorías",
     "recurring": "Recurrentes",
     "transactions": "Movimientos",
+    "recurringPayment": "Pago Recurrente",
+    "calendar": "Calendario",
     "receipts": "Recibos",
     "profile": "Perfil",
     "users": "Usuarios",
+    "more": "Más",
     "signOut": "Cerrar sesión"
   },
   "auth": {
@@ -191,7 +197,8 @@
     "progress": "Progreso",
     "monthlyAmount": "Mensualidad",
     "paid": "Pagado",
-    "active": "Activo"
+    "active": "Activo",
+    "recurringPayment": "Pago Recurrente"
   },
   "profile": {
     "title": "Mi Perfil",
@@ -214,7 +221,16 @@
     "saving": "Guardando...",
     "updateSuccess": "Perfil actualizado exitosamente",
     "updateError": "Error al actualizar perfil",
-    "uploadError": "Error al subir avatar"
+    "uploadError": "Error al subir avatar",
+    "changePassword": "Cambiar Contraseña",
+    "currentPassword": "Contraseña Actual",
+    "newPassword": "Nueva Contraseña",
+    "confirmPassword": "Confirmar Nueva Contraseña",
+    "passwordMismatch": "Las contraseñas no coinciden",
+    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
+    "passwordChangeSuccess": "Contraseña cambiada exitosamente",
+    "passwordChangeError": "Error al cambiar la contraseña",
+    "incorrectPassword": "La contraseña actual es incorrecta"
   },
   "admin": {
     "title": "Gestión de Usuarios",
@@ -372,5 +388,28 @@
     "message": "Parece que te has perdido. La página que buscas no existe o ha sido movida.",
     "backToDashboard": "Volver al Panel",
     "goToLogin": "Ir a Iniciar Sesión"
+  },
+  "calendar": {
+    "title": "Calendario",
+    "subtitle": "Ver y gestionar transacciones por fecha",
+    "views": {
+      "month": "Mes",
+      "week": "Semana",
+      "day": "Día",
+      "agenda": "Agenda"
+    },
+    "today": "Hoy",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "allDay": "Todo el día",
+    "date": "Fecha",
+    "time": "Hora",
+    "event": "Evento",
+    "noEvents": "No hay transacciones para este período",
+    "createTransaction": "Crear Transacción",
+    "selectDate": "Selecciona una fecha para crear una transacción",
+    "eventDetails": "Detalles de Transacción",
+    "clickToCreate": "Haz clic en una fecha para crear una transacción",
+    "clickToView": "Haz clic en una transacción para ver detalles"
   }
 }

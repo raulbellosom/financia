@@ -25,9 +25,17 @@
     "back": "Back",
     "noDescription": "No description",
     "uncategorized": "Uncategorized",
+    "date": "Date",
+    "category": "Category",
+    "notes": "Notes",
+    "saved": "Saved",
+    "error": "Error",
     "selectDate": "Select date",
     "copy": "Copy",
-    "copied": "Copied"
+    "copied": "Copied",
+    "paymentCount": "Payment #{{count}}",
+    "paymentHistory": "Payment History",
+    "nextPayment": "Next Payment"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -35,9 +43,12 @@
     "categories": "Categories",
     "recurring": "Recurring Rules",
     "transactions": "Transactions",
+    "recurringPayment": "Recurring Payment",
+    "calendar": "Calendar",
     "receipts": "Receipts",
     "profile": "Profile",
     "users": "Users",
+    "more": "More",
     "signOut": "Sign Out"
   },
   "auth": {
@@ -179,7 +190,15 @@
     "deferError": "Failed to defer purchase",
     "noDefer": "Do not defer",
     "deleteTitle": "Delete Transaction",
-    "deleteDesc": "Are you sure you want to delete this transaction? This action cannot be undone."
+    "deleteDesc": "Are you sure you want to delete this transaction? This action cannot be undone.",
+    "recurringCount": "Total occurrences: {{count}}",
+    "addNotePlaceholder": "Add a note...",
+    "msiTitle": "Interest-Free Months",
+    "progress": "Progress",
+    "monthlyAmount": "Monthly Amount",
+    "paid": "Paid",
+    "active": "Active",
+    "recurringPayment": "Recurring Payment"
   },
   "profile": {
     "title": "My Profile",
@@ -202,7 +221,16 @@
     "saving": "Saving...",
     "updateSuccess": "Profile updated successfully",
     "updateError": "Failed to update profile",
-    "uploadError": "Failed to upload avatar"
+    "uploadError": "Failed to upload avatar",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "passwordMismatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordChangeSuccess": "Password changed successfully",
+    "passwordChangeError": "Failed to change password",
+    "incorrectPassword": "Current password is incorrect"
   },
   "admin": {
     "title": "User Management",
@@ -360,5 +388,28 @@
     "message": "It seems you are lost. The page you are looking for does not exist or has been moved.",
     "backToDashboard": "Back to Dashboard",
     "goToLogin": "Go to Login"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "subtitle": "View and manage transactions by date",
+    "views": {
+      "month": "Month",
+      "week": "Week",
+      "day": "Day",
+      "agenda": "Agenda"
+    },
+    "today": "Today",
+    "previous": "Previous",
+    "next": "Next",
+    "allDay": "All Day",
+    "date": "Date",
+    "time": "Time",
+    "event": "Event",
+    "noEvents": "No Transactions",
+    "createTransaction": "Create Transaction",
+    "selectDate": "Select a date to create a transaction",
+    "eventDetails": "Transaction Details",
+    "clickToCreate": "Click on any date to create a new transaction, or click the button below to get started.",
+    "clickToView": "Click on a transaction to view details"
   }
 }

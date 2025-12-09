@@ -20,6 +20,7 @@ import AccountDetails from "./pages/AccountDetails";
 import Profile from "./pages/Profile";
 import AdminUsers from "./pages/AdminUsers";
 import Transactions from "./pages/Transactions";
+import CalendarView from "./pages/CalendarView";
 import Receipts from "./pages/Receipts";
 import Categories from "./pages/Categories";
 import RecurringRules from "./pages/RecurringRules";
@@ -48,6 +49,7 @@ function App() {
                 <Route path="/categories" element={<Categories />} />
                 <Route path="/recurring-rules" element={<RecurringRules />} />
                 <Route path="/transactions" element={<Transactions />} />
+                <Route path="/calendar" element={<CalendarView />} />
                 <Route path="/receipts" element={<Receipts />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/admin/users" element={<AdminUsers />} />
