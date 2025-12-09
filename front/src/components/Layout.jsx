@@ -9,12 +9,14 @@ import {
   Receipt,
   Languages,
   Tags,
+  CalendarClock,
   ChevronDown,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 import { useLocation, Link } from "react-router-dom";
 import Logo from "./Logo";
+import { useRuleProcessor } from "../hooks/useRuleProcessor";
 
 export default function Layout({ children }) {
   const { pathname } = useLocation();
@@ -22,6 +24,9 @@ export default function Layout({ children }) {
   const { i18n, t } = useTranslation();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  // Process recurring rules
+  useRuleProcessor();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,6 +40,7 @@ export default function Layout({ children }) {
     { name: t("nav.dashboard"), href: "/", icon: LayoutDashboard },
     { name: t("nav.accounts"), href: "/accounts", icon: Wallet },
     { name: t("nav.categories"), href: "/categories", icon: Tags },
+    { name: t("nav.recurring"), href: "/recurring-rules", icon: CalendarClock },
     {
       name: t("nav.transactions"),
       href: "/transactions",

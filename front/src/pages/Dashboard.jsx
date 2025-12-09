@@ -23,13 +23,23 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const { formatDate } = useDateFormatter();
 
-  const totalBalance = accounts.reduce(
-    (sum, acc) => sum + acc.currentBalance,
-    0
-  );
+  const totalBalance = accounts.reduce((sum, acc) => {
+    if (acc.type === "credit") {
+      return sum - acc.currentBalance;
+    }
+    return sum + acc.currentBalance;
+  }, 0);
+
+  const getAccountType = (accountId) => {
+    // Handle both expanded object and ID string
+    const id = accountId?.$id || accountId;
+    const account = accounts.find((a) => a.$id === id);
+    return account ? account.type : "cash";
+  };
 
   const income = transactions
     .filter((t) => t.type === "income")
+    .filter((t) => getAccountType(t.account) !== "credit")
     .reduce((sum, t) => sum + t.amount, 0);
 
   const expenses = transactions

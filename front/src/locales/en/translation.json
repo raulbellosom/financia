@@ -9,12 +9,19 @@
     "view": "View",
     "actions": "Actions",
     "seeAll": "See all",
-    "untitled": "Untitled"
+    "untitled": "Untitled",
+    "name": "Name",
+    "amount": "Amount",
+    "type": "Type",
+    "income": "Income",
+    "expense": "Expense",
+    "select": "Select option"
   },
   "nav": {
     "dashboard": "Dashboard",
     "accounts": "Accounts",
     "categories": "Categories",
+    "recurring": "Recurring Rules",
     "transactions": "Transactions",
     "receipts": "Receipts",
     "profile": "Profile",
@@ -224,5 +231,30 @@
     "deleteDescription": "Are you sure you want to delete category \"{{name}}\"?",
     "deleteSuccess": "Category deleted successfully",
     "deleteError": "Failed to delete category"
+  },
+  "recurring": {
+    "title": "Recurring Rules",
+    "subtitle": "Manage your automated transactions",
+    "addRule": "Add Rule",
+    "createRule": "Create Recurring Rule",
+    "editRule": "Edit Recurring Rule",
+    "frequency": "Frequency",
+    "interval": "Interval (e.g. every 2 months)",
+    "nextRun": "Next Run Date",
+    "autoConfirm": "Auto-confirm transaction",
+    "frequencies": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "createSuccess": "Rule created successfully",
+    "updateSuccess": "Rule updated successfully",
+    "deleteSuccess": "Rule deleted successfully",
+    "createError": "Failed to create rule",
+    "updateError": "Failed to update rule",
+    "deleteError": "Failed to delete rule",
+    "deleteTitle": "Delete Rule",
+    "deleteMessage": "Are you sure you want to delete the rule \"{{name}}\"?"
   }
 }

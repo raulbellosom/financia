@@ -9,12 +9,19 @@
     "view": "Ver",
     "actions": "Acciones",
     "seeAll": "Ver todo",
-    "untitled": "Sin título"
+    "untitled": "Sin título",
+    "name": "Nombre",
+    "amount": "Monto",
+    "type": "Tipo",
+    "income": "Ingreso",
+    "expense": "Gasto",
+    "select": "Seleccionar opción"
   },
   "nav": {
     "dashboard": "Panel",
     "accounts": "Cuentas",
     "categories": "Categorías",
+    "recurring": "Recurrentes",
     "transactions": "Movimientos",
     "receipts": "Recibos",
     "profile": "Perfil",
@@ -224,5 +231,30 @@
     "deleteDescription": "¿Estás seguro de que quieres eliminar la categoría \"{{name}}\"?",
     "deleteSuccess": "Categoría eliminada exitosamente",
     "deleteError": "Error al eliminar categoría"
+  },
+  "recurring": {
+    "title": "Reglas Recurrentes",
+    "subtitle": "Gestiona tus transacciones automáticas",
+    "addRule": "Agregar Regla",
+    "createRule": "Crear Regla Recurrente",
+    "editRule": "Editar Regla Recurrente",
+    "frequency": "Frecuencia",
+    "interval": "Intervalo (ej. cada 2 meses)",
+    "nextRun": "Próxima Ejecución",
+    "autoConfirm": "Confirmar automáticamente",
+    "frequencies": {
+      "daily": "Diario",
+      "weekly": "Semanal",
+      "monthly": "Mensual",
+      "yearly": "Anual"
+    },
+    "createSuccess": "Regla creada exitosamente",
+    "updateSuccess": "Regla actualizada exitosamente",
+    "deleteSuccess": "Regla eliminada exitosamente",
+    "createError": "Error al crear la regla",
+    "updateError": "Error al actualizar la regla",
+    "deleteError": "Error al eliminar la regla",
+    "deleteTitle": "Eliminar Regla",
+    "deleteMessage": "¿Estás seguro de que deseas eliminar la regla \"{{name}}\"?"
   }
 }

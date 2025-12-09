@@ -21,6 +21,7 @@ import AdminUsers from "./pages/AdminUsers";
 import Transactions from "./pages/Transactions";
 import Receipts from "./pages/Receipts";
 import Categories from "./pages/Categories";
+import RecurringRules from "./pages/RecurringRules";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/accounts" element={<Accounts />} />
                 <Route path="/categories" element={<Categories />} />
+                <Route path="/recurring-rules" element={<RecurringRules />} />
                 <Route path="/transactions" element={<Transactions />} />
                 <Route path="/receipts" element={<Receipts />} />
                 <Route path="/profile" element={<Profile />} />
