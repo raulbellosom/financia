@@ -6,6 +6,8 @@ import { queryClient } from "../lib/queryClient";
 import { APPWRITE_CONFIG } from "../lib/constants";
 import i18n from "../i18n";
 
+import LoadingSpinner from "../components/ui/LoadingSpinner";
+
 const AuthContext = createContext();
 
 export const useAuth = () => {
@@ -150,13 +152,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading ? (
-        children
-      ) : (
-        <div className="flex items-center justify-center h-screen bg-black text-white">
-          Loading...
-        </div>
-      )}
+      {!loading ? children : <LoadingSpinner />}
     </AuthContext.Provider>
   );
 };
