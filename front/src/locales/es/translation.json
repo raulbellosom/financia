@@ -3,6 +3,7 @@
     "loading": "Cargando...",
     "cancel": "Cancelar",
     "save": "Guardar",
+    "create": "Crear",
     "delete": "Eliminar",
     "edit": "Editar",
     "view": "Ver",
@@ -13,6 +14,7 @@
   "nav": {
     "dashboard": "Panel",
     "accounts": "Cuentas",
+    "categories": "Categorías",
     "transactions": "Movimientos",
     "receipts": "Recibos",
     "profile": "Perfil",
@@ -178,6 +180,7 @@
       "selectAccount": "Selecciona una cuenta",
       "create": "Crear Movimiento",
       "success": "Movimiento creado exitosamente",
+      "error": "Error al crear movimiento",
       "back": "Volver a Países",
       "noResults": "No se encontraron resultados"
     },
@@ -200,5 +203,26 @@
       "success": "{{item}} eliminada exitosamente",
       "error": "Error al eliminar el elemento"
     }
+  },
+  "categories": {
+    "title": "Categorías",
+    "add": "Agregar Categoría",
+    "edit": "Editar Categoría",
+    "name": "Nombre",
+    "namePlaceholder": "ej. Comestibles",
+    "type": "Tipo",
+    "income": "Ingreso",
+    "expense": "Gasto",
+    "color": "Color",
+    "icon": "Icono",
+    "noCategories": "No se encontraron categorías",
+    "createSuccess": "Categoría creada exitosamente",
+    "createError": "Error al crear categoría",
+    "updateSuccess": "Categoría actualizada exitosamente",
+    "updateError": "Error al actualizar categoría",
+    "deleteTitle": "Eliminar Categoría",
+    "deleteDescription": "¿Estás seguro de que quieres eliminar la categoría \"{{name}}\"?",
+    "deleteSuccess": "Categoría eliminada exitosamente",
+    "deleteError": "Error al eliminar categoría"
   }
 }

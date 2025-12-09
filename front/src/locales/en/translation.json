@@ -3,6 +3,7 @@
     "loading": "Loading...",
     "cancel": "Cancel",
     "save": "Save",
+    "create": "Create",
     "delete": "Delete",
     "edit": "Edit",
     "view": "View",
@@ -13,6 +14,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "accounts": "Accounts",
+    "categories": "Categories",
     "transactions": "Transactions",
     "receipts": "Receipts",
     "profile": "Profile",
@@ -178,6 +180,7 @@
       "selectAccount": "Select an account",
       "create": "Create Transaction",
       "success": "Transaction created successfully",
+      "error": "Failed to create transaction",
       "back": "Back to Countries",
       "noResults": "No results found"
     },
@@ -200,5 +203,26 @@
       "success": "{{item}} deleted successfully",
       "error": "Failed to delete item"
     }
+  },
+  "categories": {
+    "title": "Categories",
+    "add": "Add Category",
+    "edit": "Edit Category",
+    "name": "Name",
+    "namePlaceholder": "e.g. Groceries",
+    "type": "Type",
+    "income": "Income",
+    "expense": "Expense",
+    "color": "Color",
+    "icon": "Icon",
+    "noCategories": "No categories found",
+    "createSuccess": "Category created successfully",
+    "createError": "Failed to create category",
+    "updateSuccess": "Category updated successfully",
+    "updateError": "Failed to update category",
+    "deleteTitle": "Delete Category",
+    "deleteDescription": "Are you sure you want to delete category \"{{name}}\"?",
+    "deleteSuccess": "Category deleted successfully",
+    "deleteError": "Failed to delete category"
   }
 }

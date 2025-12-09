@@ -12,7 +12,7 @@ export default function PageLayout({
     <div className="min-h-full flex flex-col">
       <div
         className={clsx(
-          "flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full space-y-8",
+          "flex-1 px-4 pb-4 pt-20 md:p-8 max-w-7xl mx-auto w-full space-y-8",
           className
         )}
       >
