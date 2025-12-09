@@ -18,7 +18,11 @@ export default function TransactionModal({ isOpen, onClose }) {
     description: "",
     date: new Date().toISOString().split("T")[0],
     account: "",
+    installments: 1,
   });
+
+  const selectedAccount = accounts.find((a) => a.$id === formData.account);
+  const isCreditCard = selectedAccount?.type === "credit";
 
   if (!isOpen) return null;
 
@@ -29,6 +33,7 @@ export default function TransactionModal({ isOpen, onClose }) {
         ...formData,
         amount: parseFloat(formData.amount),
         date: new Date(formData.date).toISOString(),
+        installments: parseInt(formData.installments) || 1,
       });
       toast.success(t("components.transactionModal.success"));
       // Reset form
@@ -38,6 +43,7 @@ export default function TransactionModal({ isOpen, onClose }) {
         description: "",
         date: new Date().toISOString().split("T")[0],
         account: "",
+        installments: 1,
       });
       onClose();
     } catch (error) {
@@ -138,6 +144,28 @@ export default function TransactionModal({ isOpen, onClose }) {
               ))}
             </select>
           </div>
+
+          {isCreditCard && formData.type === "expense" && (
+            <div>
+              <label className="text-sm font-medium text-zinc-400 mb-2 block">
+                {t("components.transactionModal.installments") || "Meses (MSI)"}
+              </label>
+              <select
+                name="installments"
+                value={formData.installments}
+                onChange={handleChange}
+                className="w-full h-11 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 text-sm text-zinc-100 focus:border-indigo-500 focus:outline-none"
+              >
+                <option value="1">1 (Contado)</option>
+                <option value="3">3 Meses</option>
+                <option value="6">6 Meses</option>
+                <option value="9">9 Meses</option>
+                <option value="12">12 Meses</option>
+                <option value="18">18 Meses</option>
+                <option value="24">24 Meses</option>
+              </select>
+            </div>
+          )}
 
           <div className="pt-4">
             <Button type="submit" className="w-full" isLoading={isCreating}>

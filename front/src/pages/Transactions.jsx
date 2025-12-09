@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import TransactionModal from "../components/TransactionModal";
+import TransactionDetailsModal from "../components/TransactionDetailsModal";
 import PageLayout from "../components/PageLayout";
 import PeriodSelector from "../components/PeriodSelector";
 import TransactionFilters from "../components/TransactionFilters";
@@ -24,6 +25,9 @@ export default function Transactions() {
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [selectedDetailsTransaction, setSelectedDetailsTransaction] =
+    useState(null);
 
   // Period state
   const quickPeriods = getQuickPeriods();
@@ -176,11 +180,15 @@ export default function Transactions() {
                 {groupedTransactions[dateKey].map((tx) => (
                   <div
                     key={tx.$id}
-                    className="flex items-center justify-between p-4 border-b border-zinc-800 last:border-0 hover:bg-zinc-800/50 transition-colors"
+                    onClick={() => {
+                      setSelectedDetailsTransaction(tx);
+                      setDetailsModalOpen(true);
+                    }}
+                    className="flex items-center justify-between p-4 border-b border-zinc-800 last:border-0 hover:bg-zinc-800/50 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-4 flex-1">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                           tx.type === "income"
                             ? "bg-blue-500/10 text-blue-500"
                             : tx.type === "expense"
@@ -213,10 +221,16 @@ export default function Transactions() {
                             {tx.notes}
                           </p>
                         )}
+                        <p className="text-sm text-zinc-500">
+                          {tx.category?.name ||
+                            (tx.category && typeof tx.category === "object"
+                              ? tx.category.name
+                              : t("common.uncategorized"))}
+                        </p>
                       </div>
                     </div>
                     <span
-                      className={`font-bold text-lg ml-4 flex-shrink-0 ${
+                      className={`font-bold text-lg ml-4 shrink-0 ${
                         tx.type === "income"
                           ? "text-blue-500"
                           : tx.type === "expense"
@@ -240,6 +254,15 @@ export default function Transactions() {
       <TransactionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      <TransactionDetailsModal
+        isOpen={detailsModalOpen}
+        onClose={() => {
+          setDetailsModalOpen(false);
+          setSelectedDetailsTransaction(null);
+        }}
+        transaction={selectedDetailsTransaction}
       />
     </PageLayout>
   );

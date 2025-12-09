@@ -43,37 +43,65 @@ export default function PeriodSelector({ startDate, endDate, onPeriodChange }) {
     }
   };
 
+  const isActive = (periodKey) => {
+    const period = quickPeriods[periodKey];
+    return (
+      startDate.getTime() === period.startDate.getTime() &&
+      endDate.getTime() === period.endDate.getTime()
+    );
+  };
+
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
       {/* Quick Period Buttons */}
       <div className="flex flex-wrap gap-2 mb-4">
         <Button
           onClick={() => handleQuickPeriod("today")}
-          className="bg-zinc-800 hover:bg-zinc-700 text-white text-sm"
+          className={`text-sm ${
+            isActive("today")
+              ? "bg-emerald-600 hover:bg-emerald-500 text-white"
+              : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+          }`}
         >
           {t("reports.today")}
         </Button>
         <Button
           onClick={() => handleQuickPeriod("thisWeek")}
-          className="bg-zinc-800 hover:bg-zinc-700 text-white text-sm"
+          className={`text-sm ${
+            isActive("thisWeek")
+              ? "bg-emerald-600 hover:bg-emerald-500 text-white"
+              : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+          }`}
         >
           {t("reports.thisWeek")}
         </Button>
         <Button
           onClick={() => handleQuickPeriod("thisMonth")}
-          className="bg-zinc-800 hover:bg-zinc-700 text-white text-sm"
+          className={`text-sm ${
+            isActive("thisMonth")
+              ? "bg-emerald-600 hover:bg-emerald-500 text-white"
+              : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+          }`}
         >
           {t("reports.thisMonth")}
         </Button>
         <Button
           onClick={() => handleQuickPeriod("thisYear")}
-          className="bg-zinc-800 hover:bg-zinc-700 text-white text-sm"
+          className={`text-sm ${
+            isActive("thisYear")
+              ? "bg-emerald-600 hover:bg-emerald-500 text-white"
+              : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+          }`}
         >
           {t("reports.thisYear")}
         </Button>
         <Button
           onClick={() => setShowCustom(!showCustom)}
-          className="bg-zinc-800 hover:bg-zinc-700 text-white text-sm"
+          className={`text-sm ${
+            showCustom
+              ? "bg-emerald-600 hover:bg-emerald-500 text-white"
+              : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+          }`}
         >
           <Calendar size={16} className="mr-2" />
           {t("reports.custom")}

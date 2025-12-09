@@ -47,7 +47,17 @@ export const useTransactions = (limit = 100) => {
 
       // 2. Update Account Balance
       try {
-        const accountId = newTransaction.account;
+        // Ensure accountId is a string
+        const accountId =
+          newTransaction.account && typeof newTransaction.account === "object"
+            ? newTransaction.account.$id
+            : newTransaction.account;
+
+        if (!accountId) {
+          console.warn("Skipping balance update: No account ID provided");
+          return transaction;
+        }
+
         const account = await databases.getDocument(
           APPWRITE_CONFIG.DATABASE_ID,
           APPWRITE_CONFIG.ACCOUNTS_COLLECTION_ID,
@@ -97,11 +107,47 @@ export const useTransactions = (limit = 100) => {
     },
   });
 
+  const updateTransactionMutation = useMutation({
+    mutationFn: async ({ id, updates }) => {
+      return await databases.updateDocument(
+        APPWRITE_CONFIG.DATABASE_ID,
+        APPWRITE_CONFIG.TRANSACTIONS_COLLECTION_ID,
+        id,
+        updates
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["transactions"]);
+      queryClient.invalidateQueries(["transaction-reports"]);
+    },
+  });
+
+  const deleteTransactionMutation = useMutation({
+    mutationFn: async (id) => {
+      // Soft delete
+      return await databases.updateDocument(
+        APPWRITE_CONFIG.DATABASE_ID,
+        APPWRITE_CONFIG.TRANSACTIONS_COLLECTION_ID,
+        id,
+        { isDeleted: true }
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["transactions"]);
+      queryClient.invalidateQueries(["accounts"]);
+      queryClient.invalidateQueries(["transaction-reports"]);
+    },
+  });
+
   return {
     transactions: transactionsQuery.data || [],
     isLoading: transactionsQuery.isLoading,
     isError: transactionsQuery.isError,
     createTransaction: createTransactionMutation.mutateAsync,
     isCreating: createTransactionMutation.isPending,
+    updateTransaction: updateTransactionMutation.mutateAsync,
+    isUpdating: updateTransactionMutation.isPending,
+    deleteTransaction: deleteTransactionMutation.mutateAsync,
+    isDeleting: deleteTransactionMutation.isPending,
   };
 };

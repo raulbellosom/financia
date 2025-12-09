@@ -267,6 +267,7 @@ currency — String
 date — Datetime  
 description — String  
 notes — String
+installments — Integer (default: 1)
 
 isPending — Boolean  
 isTransferLeg — Boolean  

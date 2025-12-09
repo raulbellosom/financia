@@ -16,12 +16,14 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Accounts from "./pages/Accounts";
+import AccountDetails from "./pages/AccountDetails";
 import Profile from "./pages/Profile";
 import AdminUsers from "./pages/AdminUsers";
 import Transactions from "./pages/Transactions";
 import Receipts from "./pages/Receipts";
 import Categories from "./pages/Categories";
 import RecurringRules from "./pages/RecurringRules";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -42,6 +44,7 @@ function App() {
               >
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/accounts" element={<Accounts />} />
+                <Route path="/accounts/:id" element={<AccountDetails />} />
                 <Route path="/categories" element={<Categories />} />
                 <Route path="/recurring-rules" element={<RecurringRules />} />
                 <Route path="/transactions" element={<Transactions />} />
@@ -51,6 +54,8 @@ function App() {
                 <Route path="/onboarding" element={<Navigate to="/" />} />
               </Route>
             </Route>
+
+            <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster
             position="top-center"

@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useAccounts } from "../hooks/useAccounts";
 import { useTransactions } from "../hooks/useTransactions";
+import TransactionDetailsModal from "../components/TransactionDetailsModal";
 import {
   Wallet,
   TrendingUp,
@@ -22,6 +24,9 @@ export default function Dashboard() {
   const { transactions, isLoading: transactionsLoading } = useTransactions(5);
   const { t } = useTranslation();
   const { formatDate } = useDateFormatter();
+
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   const totalBalance = accounts.reduce((sum, acc) => {
     if (acc.type === "credit") {
@@ -153,7 +158,11 @@ export default function Dashboard() {
             transactions.map((tx) => (
               <div
                 key={tx.$id}
-                className="flex items-center justify-between p-4 border-b border-zinc-800/50 last:border-0 hover:bg-zinc-800/30 transition-colors"
+                onClick={() => {
+                  setSelectedTransaction(tx);
+                  setDetailsModalOpen(true);
+                }}
+                className="flex items-center justify-between p-4 border-b border-zinc-800/50 last:border-0 hover:bg-zinc-800/30 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-4">
                   <div
@@ -201,6 +210,16 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      <TransactionDetailsModal
+        isOpen={detailsModalOpen}
+        onClose={() => {
+          setDetailsModalOpen(false);
+          setSelectedTransaction(null);
+        }}
+        transaction={selectedTransaction}
+        readOnly={true}
+      />
     </PageLayout>
   );
 }

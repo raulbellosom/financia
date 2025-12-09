@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
-import { X, Check, Trash2, AlertCircle } from "lucide-react";
+import { X, Check, Trash2, AlertCircle, Copy } from "lucide-react";
 import { Button } from "./ui/Button";
 import { Select } from "./ui/Select";
 import { Input } from "./ui/Input";
+import { DatePicker } from "./ui/DatePicker";
 import ImageViewerModal from "./ImageViewerModal";
 import { storage, databases } from "../lib/appwrite";
 import { APPWRITE_CONFIG } from "../lib/constants";
 import { useAccounts } from "../hooks/useAccounts";
 import { useCategories } from "../hooks/useCategories";
 import { useReceipts } from "../hooks/useReceipts";
+import { useTransactions } from "../hooks/useTransactions";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 
@@ -17,6 +19,7 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
   const { accounts } = useAccounts();
   const { categories } = useCategories();
   const { confirmDraft, deleteReceipt } = useReceipts();
+  const { createTransaction } = useTransactions();
 
   const [transaction, setTransaction] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -24,6 +27,9 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
     account: "",
     category: "",
     description: "",
+    date: "",
+    amount: "",
+    installments: "1",
   });
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
 
@@ -43,6 +49,9 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
             account: tx.account || "",
             category: tx.category || "",
             description: tx.description || "",
+            date: tx.date ? new Date(tx.date).toISOString().split("T")[0] : "",
+            amount: tx.amount ? String(tx.amount) : "",
+            installments: tx.installments ? String(tx.installments) : "1",
           });
         })
         .catch((err) => {
@@ -57,6 +66,11 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
         account: "",
         category: "",
         description: receipt?.detectedMerchant || "",
+        date: receipt?.detectedDate
+          ? new Date(receipt.detectedDate).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
+        amount: receipt?.detectedAmount ? String(receipt.detectedAmount) : "",
+        installments: "1",
       });
     }
   }, [receipt]);
@@ -87,20 +101,54 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
       toast.error(t("receipts.selectCategory"));
       return;
     }
+    if (!formData.date) {
+      toast.error(t("receipts.selectDate"));
+      return;
+    }
+    if (!formData.amount) {
+      toast.error(t("receipts.enterAmount"));
+      return;
+    }
 
     try {
-      await confirmDraft({
-        transactionId: transaction.$id,
-        updates: {
+      if (transaction) {
+        await confirmDraft({
+          transactionId: transaction.$id,
+          updates: {
+            account: formData.account,
+            category: formData.category,
+            description: formData.description,
+            date: new Date(formData.date).toISOString(),
+            amount: parseFloat(formData.amount),
+            installments: parseInt(formData.installments) || 1,
+          },
+        });
+        toast.success(t("receipts.draftConfirmed"));
+      } else {
+        // Create new transaction
+        const newTx = await createTransaction({
           account: formData.account,
           category: formData.category,
           description: formData.description,
-        },
-      });
-      toast.success(t("receipts.draftConfirmed"));
+          date: new Date(formData.date).toISOString(),
+          amount: parseFloat(formData.amount),
+          type: "expense", // Default to expense for receipts
+          installments: parseInt(formData.installments) || 1,
+        });
+
+        // Link receipt to transaction
+        await databases.updateDocument(
+          APPWRITE_CONFIG.DATABASE_ID,
+          APPWRITE_CONFIG.RECEIPTS_COLLECTION_ID,
+          receipt.$id,
+          { transaction: newTx.$id }
+        );
+
+        toast.success(t("receipts.transactionCreated"));
+      }
       onClose();
     } catch (error) {
-      console.error("Error confirming draft:", error);
+      console.error("Error confirming/creating transaction:", error);
       toast.error(t("receipts.confirmError"));
     }
   };
@@ -143,12 +191,8 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
       label: cat.name,
     }));
 
-  const confidenceColor =
-    receipt.confidence >= 0.7
-      ? "text-emerald-500"
-      : receipt.confidence >= 0.4
-      ? "text-yellow-500"
-      : "text-red-500";
+  const selectedAccount = accounts.find((a) => a.$id === formData.account);
+  const isCreditCard = selectedAccount?.type === "credit";
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
@@ -263,12 +307,15 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
           </div>
 
           {/* Draft Transaction Form */}
-          {transaction && transaction.isDraft && (
+          {((transaction && transaction.isDraft) ||
+            (!transaction && receipt.status === "processed")) && (
             <div className="bg-zinc-800/50 rounded-xl p-6 space-y-4">
               <div className="flex items-center gap-2 mb-4">
                 <AlertCircle size={20} className="text-yellow-500" />
                 <h3 className="text-lg font-semibold text-white">
-                  {t("receipts.draftTransaction")}
+                  {transaction
+                    ? t("receipts.draftTransaction")
+                    : t("receipts.createTransaction")}
                 </h3>
               </div>
 
@@ -321,25 +368,59 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
                   />
                 </div>
 
-                {/* Amount (readonly) */}
+                {/* Amount */}
                 <div>
                   <label className="block text-sm text-zinc-400 mb-2">
-                    {t("receipts.amount")}
+                    {t("receipts.amount")} *
                   </label>
-                  <div className="bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-white">
-                    ${transaction.amount.toFixed(2)}
-                  </div>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formData.amount}
+                    onChange={(e) =>
+                      setFormData({ ...formData, amount: e.target.value })
+                    }
+                    placeholder="0.00"
+                  />
                 </div>
 
-                {/* Date (readonly) */}
+                {/* Date */}
                 <div>
-                  <label className="block text-sm text-zinc-400 mb-2">
-                    {t("receipts.date")}
-                  </label>
-                  <div className="bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-white">
-                    {new Date(transaction.date).toLocaleDateString()}
-                  </div>
+                  <DatePicker
+                    label={`${t("receipts.date")} *`}
+                    value={formData.date}
+                    onChange={(e) =>
+                      setFormData({ ...formData, date: e.target.value })
+                    }
+                  />
                 </div>
+
+                {/* Installments (MSI) - Only for Credit Cards */}
+                {isCreditCard && (
+                  <div>
+                    <label className="block text-sm text-zinc-400 mb-2">
+                      {t("transactions.msi")}
+                    </label>
+                    <Select
+                      value={formData.installments}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          installments: e.target.value,
+                        })
+                      }
+                      options={[
+                        { value: "1", label: t("transactions.noDefer") },
+                        { value: "3", label: "3 Meses" },
+                        { value: "6", label: "6 Meses" },
+                        { value: "9", label: "9 Meses" },
+                        { value: "12", label: "12 Meses" },
+                        { value: "18", label: "18 Meses" },
+                        { value: "24", label: "24 Meses" },
+                      ]}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Actions */}
@@ -347,42 +428,48 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
                 <Button
                   onClick={handleConfirmDraft}
                   className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-zinc-950"
-                  disabled={!formData.account || !formData.category}
+                  disabled={
+                    !formData.account || !formData.category || !formData.amount
+                  }
                 >
                   <Check size={20} className="mr-2" />
-                  {t("receipts.confirmTransaction")}
+                  {transaction
+                    ? t("receipts.confirmTransaction")
+                    : t("receipts.createTransaction")}
                 </Button>
-                <Button
-                  onClick={handleDeleteDraft}
-                  className="bg-red-500/10 hover:bg-red-500/20 text-red-500"
-                >
-                  <Trash2 size={20} className="mr-2" />
-                  {t("receipts.deleteDraft")}
-                </Button>
+                {transaction && (
+                  <Button
+                    onClick={handleDeleteDraft}
+                    className="bg-red-500/10 hover:bg-red-500/20 text-red-500"
+                  >
+                    <Trash2 size={20} className="mr-2" />
+                    {t("receipts.deleteDraft")}
+                  </Button>
+                )}
               </div>
-            </div>
-          )}
-
-          {/* No Draft Transaction */}
-          {!transaction && receipt.status === "processed" && (
-            <div className="bg-zinc-800/50 rounded-xl p-6 text-center">
-              <p className="text-zinc-400 mb-4">
-                {t("receipts.noDraftTransaction")}
-              </p>
-              <p className="text-sm text-zinc-500">
-                {t("receipts.noDraftTransactionDesc")}
-              </p>
             </div>
           )}
 
           {/* OCR Text (collapsible) */}
           {receipt.ocrText && (
-            <details className="bg-zinc-800/30 rounded-xl">
-              <summary className="p-4 cursor-pointer text-white font-medium hover:bg-zinc-800/50 transition-colors rounded-xl">
-                {t("receipts.viewOcrText")}
+            <details className="bg-zinc-800/30 rounded-xl group">
+              <summary className="p-4 cursor-pointer text-white font-medium hover:bg-zinc-800/50 transition-colors rounded-xl flex justify-between items-center">
+                <span>{t("receipts.viewOcrText")}</span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigator.clipboard.writeText(receipt.ocrText);
+                    toast.success(t("common.copied"));
+                  }}
+                  className="text-zinc-400 hover:text-white p-1 h-auto"
+                >
+                  <Copy size={16} />
+                </Button>
               </summary>
               <div className="p-4 pt-0">
-                <pre className="text-xs text-zinc-400 whitespace-pre-wrap font-mono">
+                <pre className="text-xs text-zinc-400 whitespace-pre-wrap font-mono max-h-60 overflow-y-auto">
                   {receipt.ocrText}
                 </pre>
               </div>

@@ -91,6 +91,20 @@ def extract_amount(text):
         (r'pago[\s.,;:]*con[\s.,;:]*tarjeta[:\s]*\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', 'pago_tarjeta'),
         # Total Contado (strict)
         (r'total\s+contado[:\s]*\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', 'total_contado'),
+        # Total Neto
+        (r'total\s+neto[:\s]*\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', 'total_neto'),
+        # Importe Total
+        (r'importe\s+total[:\s]*\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', 'importe_total'),
+        # Total a Pagar
+        (r'total\s+a\s+pagar[:\s]*\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', 'total_a_pagar'),
+        # Total Contado: $ 123.45
+        (r'total\s+contado[:\s]+\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', 'total_contado'),
+        # Total Neto: $ 123.45
+        (r'total\s+neto[:\s]+\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', 'total_neto'),
+        # Importe Total: $ 123.45
+        (r'importe\s+total[:\s]+\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', 'importe_total'),
+        # Total a Pagar: $ 123.45
+        (r'total\s+a\s+pagar[:\s]+\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', 'total_a_pagar'),
         # Total: $ 123.45 or Total $ 123.45
         (r'(?:total|tota[l1!|])[:\s]+\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', 'total'),
         # Neto $ 77.60 or Net $ 123.45
@@ -105,43 +119,54 @@ def extract_amount(text):
         (r'(\d{1,3}[.,]\d{3}[.,]\d{2})\s*$', 'large_amount_end'),
     ]
     
+    candidates = []
+
     for pattern, pattern_name in patterns:
         matches = re.findall(pattern, text_cleaned, re.IGNORECASE | re.MULTILINE)
         if matches:
             print(f"Pattern '{pattern_name}' found {len(matches)} match(es): {matches}")
-            # Take the last match (usually the total is at the bottom)
-            amount_str = matches[-1].strip()
             
-            # Parse Spanish/Mexican number format
-            # In Spanish: 2,901.00 means two thousand nine hundred one
-            # Comma is thousands separator, period is decimal separator
-            
-            # Determine if comma or period is decimal separator
-            # Rule: Last separator is decimal, others are thousands
-            amount_str = amount_str.replace(' ', '')
-            
-            # Find last separator
-            last_comma = amount_str.rfind(',')
-            last_period = amount_str.rfind('.')
-            
-            if last_comma > last_period:
-                # Comma is decimal separator (European format: 2.901,00)
-                amount_str = amount_str.replace('.', '').replace(',', '.')
-            else:
-                # Period is decimal separator (US/Mexican format: 2,901.00)
-                amount_str = amount_str.replace(',', '')
-            
-            try:
-                amount = float(amount_str)
-                # Sanity check: amount should be between 0.01 and 999999.99
-                if 0.01 <= amount <= 999999.99:
-                    print(f"✓ Amount detected: {amount} (pattern: {pattern_name})")
-                    return amount
+            for match in matches:
+                amount_str = match.strip()
+                
+                # Parse Spanish/Mexican number format
+                # In Spanish: 2,901.00 means two thousand nine hundred one
+                # Comma is thousands separator, period is decimal separator
+                
+                # Determine if comma or period is decimal separator
+                # Rule: Last separator is decimal, others are thousands
+                amount_str_clean = amount_str.replace(' ', '')
+                
+                # Find last separator
+                last_comma = amount_str_clean.rfind(',')
+                last_period = amount_str_clean.rfind('.')
+                
+                if last_comma > last_period:
+                    # Comma is decimal separator (European format: 2.901,00)
+                    amount_str_clean = amount_str_clean.replace('.', '').replace(',', '.')
                 else:
-                    print(f"✗ Amount {amount} out of range (pattern: {pattern_name})")
-            except ValueError as e:
-                print(f"✗ Error parsing amount '{amount_str}': {e}")
-                continue
+                    # Period is decimal separator (US/Mexican format: 2,901.00)
+                    amount_str_clean = amount_str_clean.replace(',', '')
+                
+                try:
+                    amount = float(amount_str_clean)
+                    # Sanity check: amount should be between 0.01 and 999999.99
+                    if 0.01 <= amount <= 999999.99:
+                        candidates.append((amount, pattern_name))
+                    else:
+                        print(f"✗ Amount {amount} out of range (pattern: {pattern_name})")
+                except ValueError as e:
+                    print(f"✗ Error parsing amount '{amount_str}': {e}")
+                    continue
+
+    if candidates:
+        # Sort by amount descending to find the largest one (usually the total)
+        # But prioritize "Total" patterns if amounts are equal? 
+        # For now, just taking the largest amount is a good heuristic for receipts.
+        candidates.sort(key=lambda x: x[0], reverse=True)
+        best_amount, best_pattern = candidates[0]
+        print(f"✓ Best amount detected: {best_amount} (pattern: {best_pattern}) from {len(candidates)} candidates")
+        return best_amount
     
     print("✗ No amount detected with any pattern")
     return None

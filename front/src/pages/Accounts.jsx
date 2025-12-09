@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAccounts } from "../hooks/useAccounts";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
@@ -51,6 +52,7 @@ export default function Accounts() {
     deleteAccount,
     isDeleting,
   } = useAccounts();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
@@ -204,7 +206,8 @@ export default function Accounts() {
             return (
               <div
                 key={account.$id}
-                className="bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800/50 hover:border-zinc-700 transition-colors group relative overflow-hidden"
+                onClick={() => navigate(`/accounts/${account.$id}`)}
+                className="bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800/50 hover:border-zinc-700 transition-colors group relative overflow-hidden cursor-pointer"
               >
                 <div
                   className="absolute top-0 left-0 w-1 h-full"
@@ -225,14 +228,20 @@ export default function Accounts() {
                   {/* Actions: Edit and Delete */}
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => handleOpenDelete(account)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenDelete(account);
+                      }}
                       className="p-2 text-zinc-500 hover:text-red-500 hover:bg-zinc-800 rounded-lg transition-all"
                       title={t("common.delete")}
                     >
                       <Trash2 size={18} />
                     </button>
                     <button
-                      onClick={() => handleOpenEdit(account)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenEdit(account);
+                      }}
                       className="p-2 text-zinc-500 hover:bg-zinc-800 rounded-lg transition-all"
                       style={{
                         hoverColor: hexColor, // Note: This isn't valid React style for hover. We'll stick to classes or just standard hover helpers.

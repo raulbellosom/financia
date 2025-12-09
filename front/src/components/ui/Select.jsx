@@ -8,6 +8,7 @@ export function Select({
   options,
   placeholder = "Select an option",
   className = "",
+  variant = "default", // default, ghost
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
@@ -28,6 +29,11 @@ export function Select({
 
   const selectedOption = options.find((opt) => opt.value === value);
 
+  const buttonStyles =
+    variant === "ghost"
+      ? "w-full bg-transparent border-none p-0 text-left text-white focus:outline-none transition-all flex items-center justify-between"
+      : "w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-left text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all flex items-center justify-between";
+
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       {label && (
@@ -38,7 +44,7 @@ export function Select({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-left text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all flex items-center justify-between"
+        className={buttonStyles}
       >
         <span className={selectedOption ? "text-white" : "text-zinc-500"}>
           {selectedOption ? selectedOption.label : placeholder}

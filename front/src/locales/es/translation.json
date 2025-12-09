@@ -21,7 +21,18 @@
     "all": "Todos",
     "groupBy": "Agrupar por",
     "filter": "Filtrar",
-    "status": "Estado"
+    "status": "Estado",
+    "back": "Volver",
+    "noDescription": "Sin descripción",
+    "uncategorized": "Sin categoría",
+    "date": "Fecha",
+    "category": "Categoría",
+    "selectDate": "Seleccionar fecha",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "notes": "Notas",
+    "saved": "Guardado",
+    "error": "Error"
   },
   "nav": {
     "dashboard": "Panel",
@@ -89,6 +100,8 @@
     "selectCategory": "Selecciona una categoría",
     "descriptionPlaceholder": "Ingresa descripción",
     "confirmTransaction": "Confirmar Transacción",
+    "createTransaction": "Crear Transacción",
+    "transactionCreated": "Transacción creada exitosamente",
     "deleteDraft": "Eliminar Borrador",
     "draftConfirmed": "Transacción confirmada exitosamente",
     "confirmError": "Error al confirmar transacción",
@@ -140,7 +153,12 @@
     "editAccountTitle": "Editar Cuenta",
     "updateButton": "Actualizar Cuenta",
     "updateSuccess": "Cuenta actualizada exitosamente",
-    "updateError": "Error al actualizar cuenta"
+    "updateError": "Error al actualizar cuenta",
+    "detailsSubtitle": "Detalles y movimientos de la cuenta",
+    "currentBalance": "Balance Actual",
+    "creditLimit": "Límite de Crédito",
+    "notFound": "Cuenta no encontrada",
+    "day": "Día {{day}}"
   },
   "transactions": {
     "title": "Movimientos",
@@ -154,7 +172,26 @@
     "transfer": "Transferencia",
     "draft": "Borrador",
     "recurring": "Recurrente",
-    "ocr": "OCR"
+    "ocr": "OCR",
+    "msi": "MSI",
+    "defer": "Diferir",
+    "deferTitle": "Diferir Compra",
+    "deferDesc": "Selecciona el plazo para diferir esta compra.",
+    "months": "Meses",
+    "cannotDefer": "No se puede diferir",
+    "cannotDeferDesc": "La fecha de corte para esta compra ya ha pasado.",
+    "deferSuccess": "Compra diferida exitosamente",
+    "deferError": "Error al diferir compra",
+    "noDefer": "No diferir",
+    "deleteTitle": "Eliminar Movimiento",
+    "deleteDesc": "¿Estás seguro de que quieres eliminar este movimiento? Esta acción no se puede deshacer.",
+    "recurringCount": "Total de ocurrencias: {{count}}",
+    "addNotePlaceholder": "Agregar una nota...",
+    "msiTitle": "Meses sin Intereses",
+    "progress": "Progreso",
+    "monthlyAmount": "Mensualidad",
+    "paid": "Pagado",
+    "active": "Activo"
   },
   "profile": {
     "title": "Mi Perfil",
@@ -325,6 +362,15 @@
     "totalIncome": "Ingresos Totales",
     "totalExpenses": "Gastos Totales",
     "netBalance": "Balance Neto",
-    "transactions": "movimientos"
+    "transactions": "movimientos",
+    "nextPayment": "Próximo pago",
+    "paymentHistory": "Historial de pagos",
+    "paymentCount": "Pago #{{count}}"
+  },
+  "notFound": {
+    "title": "Página no encontrada",
+    "message": "Parece que te has perdido. La página que buscas no existe o ha sido movida.",
+    "backToDashboard": "Volver al Panel",
+    "goToLogin": "Ir a Iniciar Sesión"
   }
 }

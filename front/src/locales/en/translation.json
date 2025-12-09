@@ -21,7 +21,13 @@
     "all": "All",
     "groupBy": "Group by",
     "filter": "Filter",
-    "status": "Status"
+    "status": "Status",
+    "back": "Back",
+    "noDescription": "No description",
+    "uncategorized": "Uncategorized",
+    "selectDate": "Select date",
+    "copy": "Copy",
+    "copied": "Copied"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -89,6 +95,8 @@
     "selectCategory": "Select a category",
     "descriptionPlaceholder": "Enter description",
     "confirmTransaction": "Confirm Transaction",
+    "createTransaction": "Create Transaction",
+    "transactionCreated": "Transaction created successfully",
     "deleteDraft": "Delete Draft",
     "draftConfirmed": "Transaction confirmed successfully",
     "confirmError": "Failed to confirm transaction",
@@ -140,7 +148,12 @@
     "editAccountTitle": "Edit Account",
     "updateButton": "Update Account",
     "updateSuccess": "Account updated successfully",
-    "updateError": "Failed to update account"
+    "updateError": "Failed to update account",
+    "detailsSubtitle": "Account details and transactions",
+    "currentBalance": "Current Balance",
+    "creditLimit": "Credit Limit",
+    "notFound": "Account not found",
+    "day": "Day {{day}}"
   },
   "transactions": {
     "title": "Transactions",
@@ -154,7 +167,19 @@
     "transfer": "Transfer",
     "draft": "Draft",
     "recurring": "Recurring",
-    "ocr": "OCR"
+    "ocr": "OCR",
+    "msi": "MSI",
+    "defer": "Defer",
+    "deferTitle": "Defer Purchase",
+    "deferDesc": "Select the term to defer this purchase.",
+    "months": "Months",
+    "cannotDefer": "Cannot defer",
+    "cannotDeferDesc": "The billing cut-off date for this purchase has already passed.",
+    "deferSuccess": "Purchase deferred successfully",
+    "deferError": "Failed to defer purchase",
+    "noDefer": "Do not defer",
+    "deleteTitle": "Delete Transaction",
+    "deleteDesc": "Are you sure you want to delete this transaction? This action cannot be undone."
   },
   "profile": {
     "title": "My Profile",
@@ -325,6 +350,15 @@
     "totalIncome": "Total Income",
     "totalExpenses": "Total Expenses",
     "netBalance": "Net Balance",
-    "transactions": "transactions"
+    "transactions": "transactions",
+    "nextPayment": "Next Payment",
+    "paymentHistory": "Payment History",
+    "paymentCount": "Payment #{{count}}"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "message": "It seems you are lost. The page you are looking for does not exist or has been moved.",
+    "backToDashboard": "Back to Dashboard",
+    "goToLogin": "Go to Login"
   }
 }
