@@ -127,9 +127,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (email, password, name) => {
+    console.log("Registering user:", email);
     try {
-      await account.create(ID.unique(), email, password, name);
+      const userId = ID.unique();
+      console.log("Generated ID:", userId);
+      await account.create(userId, email, password, name);
+      console.log("User created successfully");
+
       await account.createEmailPasswordSession(email, password);
+      console.log("Session created");
 
       // Use legacy endpoint directly to avoid 404s with current Server/SDK mismatch
       try {
