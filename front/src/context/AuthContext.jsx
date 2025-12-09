@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect } from "react";
-import { account, databases } from "../lib/appwrite";
+import client, { account, databases } from "../lib/appwrite";
 import { ID, Query } from "appwrite";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "../lib/queryClient";
@@ -111,6 +111,14 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       await account.createEmailPasswordSession(email, password);
+      const user = await account.get();
+      if (!user.emailVerification) {
+        await account.deleteSession("current");
+        return {
+          success: false,
+          error: "Email not verified. Please check your inbox.",
+        };
+      }
       await refetchUser();
       return { success: true };
     } catch (error) {
@@ -121,10 +129,29 @@ export const AuthProvider = ({ children }) => {
   const register = async (email, password, name) => {
     try {
       await account.create(ID.unique(), email, password, name);
-      await login(email, password);
-      return { success: true };
+      await account.createEmailPasswordSession(email, password);
+
+      // Use legacy endpoint directly to avoid 404s with current Server/SDK mismatch
+      try {
+        const legacyUrl = new URL(
+          APPWRITE_CONFIG.ENDPOINT + "/account/verification"
+        );
+        await client.call(
+          "POST",
+          legacyUrl,
+          { "content-type": "application/json" },
+          { url: `${window.location.origin}/verify-email` }
+        );
+        console.log("Verification email request sent (Legacy Endpoint)");
+      } catch (error) {
+        console.error("Failed to send verification email", error);
+        // Don't block registration success if email fails, but warn
+      }
+
+      await account.deleteSession("current");
+      return { success: true, requireVerification: true };
     } catch (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: error.message, code: error.code };
     }
   };
 

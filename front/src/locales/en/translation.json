@@ -35,7 +35,9 @@
     "copied": "Copied",
     "paymentCount": "Payment #{{count}}",
     "paymentHistory": "Payment History",
-    "nextPayment": "Next Payment"
+    "nextPayment": "Next Payment",
+    "refreshed": "Data refreshed",
+    "refreshError": "Failed to refresh data"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -66,7 +68,19 @@
     "successLogin": "Welcome back!",
     "errorLogin": "Failed to login",
     "successRegister": "Account created successfully!",
-    "errorRegister": "Failed to create account"
+    "errorRegister": "Failed to create account",
+    "userAlreadyExists": "User with this email already exists",
+    "verificationSent": "Verification email sent!",
+    "checkEmail": "Check your email",
+    "checkEmailDesc": "We've sent a verification link to your email address. Please verify your account to log in.",
+    "goToLogin": "Go to Login",
+    "verifyingEmail": "Verifying Email...",
+    "pleaseWait": "Please wait while we verify your email address.",
+    "emailVerified": "Email Verified!",
+    "emailVerifiedDesc": "Your email has been successfully verified. You can now log in.",
+    "verificationFailed": "Verification Failed",
+    "verificationFailedDesc": "The verification link is invalid or has expired.",
+    "backToLogin": "Back to Login"
   },
   "dashboard": {
     "hello": "Hello, {{name}}",

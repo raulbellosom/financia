@@ -35,7 +35,9 @@
     "error": "Error",
     "paymentCount": "Pago #{{count}}",
     "paymentHistory": "Historial de Pagos",
-    "nextPayment": "Próximo Pago"
+    "nextPayment": "Próximo Pago",
+    "refreshed": "Datos actualizados",
+    "refreshError": "Error al actualizar datos"
   },
   "nav": {
     "dashboard": "Panel",
@@ -66,7 +68,19 @@
     "successLogin": "¡Bienvenido!",
     "errorLogin": "Error al iniciar sesión",
     "successRegister": "¡Cuenta creada exitosamente!",
-    "errorRegister": "Error al crear cuenta"
+    "errorRegister": "Error al crear cuenta",
+    "userAlreadyExists": "Un usuario con este correo ya existe",
+    "verificationSent": "¡Correo de verificación enviado!",
+    "checkEmail": "Revisa tu correo",
+    "checkEmailDesc": "Hemos enviado un enlace de verificación a tu correo electrónico. Por favor verifica tu cuenta para iniciar sesión.",
+    "goToLogin": "Ir a Iniciar Sesión",
+    "verifyingEmail": "Verificando correo...",
+    "pleaseWait": "Por favor espera mientras verificamos tu dirección de correo.",
+    "emailVerified": "¡Correo Verificado!",
+    "emailVerifiedDesc": "Tu correo ha sido verificado exitosamente. Ahora puedes iniciar sesión.",
+    "verificationFailed": "Verificación Fallida",
+    "verificationFailedDesc": "El enlace de verificación es inválido o ha expirado.",
+    "backToLogin": "Volver a Iniciar Sesión"
   },
   "dashboard": {
     "hello": "Hola, {{name}}",

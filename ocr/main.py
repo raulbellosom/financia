@@ -44,27 +44,18 @@ def preprocess_image(image):
         new_height = int(height * ratio)
         img = img.resize((1500, new_height), Image.Resampling.LANCZOS)
     
-    # Increase contrast more aggressively
+    # Increase contrast moderately (was 2.5, now 1.5 to avoid washing out details)
     enhancer = ImageEnhance.Contrast(img)
-    img = enhancer.enhance(2.5)
+    img = enhancer.enhance(1.5)
     
-    # Increase sharpness
+    # Increase sharpness moderately (was 2.0, now 1.5)
     enhancer = ImageEnhance.Sharpness(img)
-    img = enhancer.enhance(2.0)
+    img = enhancer.enhance(1.5)
     
-    # Apply adaptive thresholding for better text detection
-    # This helps with receipts that have varying lighting
-    import numpy as np
-    from PIL import ImageOps
-    
-    # Convert to numpy array for processing
-    img_array = np.array(img)
-    
-    # Apply binary threshold
-    threshold = np.mean(img_array)
-    img_array = np.where(img_array > threshold, 255, 0).astype(np.uint8)
-    
-    img = Image.fromarray(img_array)
+    # REMOVED: Manual binary thresholding.
+    # The previous logic using np.mean() was too aggressive for receipts with dark backgrounds,
+    # causing the text to be lost or noise to be amplified.
+    # Tesseract handles binarization internally (Otsu's method) which is usually better.
     
     return img
 

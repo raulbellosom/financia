@@ -29,6 +29,16 @@ import {
   TrendingUp,
   TrendingDown,
   Tags,
+  Shirt,
+  Coffee,
+  Globe,
+  Smartphone,
+  Wifi,
+  Music,
+  Tv,
+  Dumbbell,
+  PawPrint,
+  Package,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
@@ -42,6 +52,16 @@ const ICONS = [
   { id: "piggy", component: PiggyBank },
   { id: "shopping", component: ShoppingCart },
   { id: "food", component: Utensils },
+  { id: "clothing", component: Shirt },
+  { id: "coffee", component: Coffee },
+  { id: "online", component: Globe },
+  { id: "package", component: Package },
+  { id: "phone", component: Smartphone },
+  { id: "internet", component: Wifi },
+  { id: "entertainment", component: Tv },
+  { id: "music", component: Music },
+  { id: "gym", component: Dumbbell },
+  { id: "pets", component: PawPrint },
   { id: "transport", component: Car },
   { id: "home", component: Home },
   { id: "utilities", component: Zap },
@@ -183,7 +203,7 @@ export default function Categories() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleOpenEdit(category)}
                   className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"

@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   Download,
+  RefreshCw,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -22,6 +23,8 @@ import { useLocation, Link } from "react-router-dom";
 import Logo from "./Logo";
 import { useRuleProcessor } from "../hooks/useRuleProcessor";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 export default function Layout({ children }) {
   const { pathname } = useLocation();
@@ -32,6 +35,8 @@ export default function Layout({ children }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const queryClient = useQueryClient();
 
   // Process recurring rules
   useRuleProcessor();
@@ -81,6 +86,20 @@ export default function Layout({ children }) {
     setShowInstallPrompt(false);
     // Dismiss for 7 days
     localStorage.setItem("pwa-prompt-dismissed", Date.now().toString());
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await queryClient.invalidateQueries();
+      await queryClient.refetchQueries();
+      toast.success(t("common.refreshed", "Data refreshed"));
+    } catch (error) {
+      console.error("Refresh failed", error);
+      toast.error(t("common.refreshError", "Failed to refresh data"));
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500);
+    }
   };
 
   const navigation = [
@@ -243,106 +262,119 @@ export default function Layout({ children }) {
             <span className="text-lg font-bold">Financia</span>
           </div>
 
-          {/* Profile Dropdown */}
-          <div className="relative">
+          <div className="flex items-center gap-2">
+            {/* Refresh Button */}
             <button
-              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-              className="flex items-center p-1 rounded-full hover:bg-white/10 transition-colors relative z-50"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className={`p-2 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors ${
+                isRefreshing ? "animate-spin text-emerald-500" : ""
+              }`}
             >
-              <div
-                className={`overflow-hidden transition-all duration-500 ease-in-out flex items-center ${
-                  isScrolled
-                    ? "max-w-0 opacity-0 translate-x-8"
-                    : "max-w-[150px] opacity-100 mr-3 translate-x-0"
-                }`}
-              >
-                <span className="text-sm font-medium text-white truncate">
-                  {userInfo?.firstName}
-                </span>
-              </div>
-
-              <div className="w-8 h-8 rounded-full bg-zinc-800 overflow-hidden shrink-0 ring-2 ring-transparent hover:ring-emerald-500/50 transition-all relative z-10">
-                {userInfo?.avatarFileId ? (
-                  <img
-                    src={`https://appwrite.racoondevs.com/v1/storage/buckets/${
-                      import.meta.env.VITE_APPWRITE_AVATARS_BUCKET_ID
-                    }/files/${userInfo.avatarFileId}/view?project=${
-                      import.meta.env.VITE_APPWRITE_PROJECT_ID
-                    }`}
-                    alt="Avatar"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-zinc-500">
-                    <User size={16} />
-                  </div>
-                )}
-              </div>
+              <RefreshCw size={20} />
             </button>
 
-            {/* Dropdown Menu */}
-            {isProfileMenuOpen && (
-              <>
-                {/* Backdrop */}
+            {/* Profile Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                className="flex items-center p-1 rounded-full hover:bg-white/10 transition-colors relative z-50"
+              >
                 <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setIsProfileMenuOpen(false)}
-                />
-                {/* Menu */}
-                <div className="absolute right-0 mt-2 w-56 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl z-50 overflow-hidden">
-                  {/* User Info */}
-                  <div className="px-4 py-3 border-b border-zinc-800">
-                    <p className="text-sm font-medium text-white truncate">
-                      {userInfo?.firstName} {userInfo?.lastName}
-                    </p>
-                    <p className="text-xs text-zinc-500 truncate">
-                      {userInfo?.email}
-                    </p>
-                  </div>
+                  className={`overflow-hidden transition-all duration-500 ease-in-out flex items-center ${
+                    isScrolled
+                      ? "max-w-0 opacity-0 translate-x-8"
+                      : "max-w-[150px] opacity-100 mr-3 translate-x-0"
+                  }`}
+                >
+                  <span className="text-sm font-medium text-white truncate">
+                    {userInfo?.firstName}
+                  </span>
+                </div>
 
-                  {/* Menu Items */}
-                  <div className="py-2">
-                    <Link
-                      to="/profile"
-                      onClick={() => setIsProfileMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"
-                    >
-                      <User size={18} />
-                      <span className="text-sm">{t("nav.profile")}</span>
-                    </Link>
+                <div className="w-8 h-8 rounded-full bg-zinc-800 overflow-hidden shrink-0 ring-2 ring-transparent hover:ring-emerald-500/50 transition-all relative z-10">
+                  {userInfo?.avatarFileId ? (
+                    <img
+                      src={`https://appwrite.racoondevs.com/v1/storage/buckets/${
+                        import.meta.env.VITE_APPWRITE_AVATARS_BUCKET_ID
+                      }/files/${userInfo.avatarFileId}/view?project=${
+                        import.meta.env.VITE_APPWRITE_PROJECT_ID
+                      }`}
+                      alt="Avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-zinc-500">
+                      <User size={16} />
+                    </div>
+                  )}
+                </div>
+              </button>
 
-                    <button
-                      onClick={toggleLanguage}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"
-                    >
-                      <Languages size={18} />
-                      <span className="text-sm">
-                        {i18n.language === "es" ? "English" : "Español"}
-                      </span>
-                    </button>
+              {/* Dropdown Menu */}
+              {isProfileMenuOpen && (
+                <>
+                  {/* Backdrop */}
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsProfileMenuOpen(false)}
+                  />
+                  {/* Menu */}
+                  <div className="absolute right-0 mt-2 w-56 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl z-50 overflow-hidden">
+                    {/* User Info */}
+                    <div className="px-4 py-3 border-b border-zinc-800">
+                      <p className="text-sm font-medium text-white truncate">
+                        {userInfo?.firstName} {userInfo?.lastName}
+                      </p>
+                      <p className="text-xs text-zinc-500 truncate">
+                        {userInfo?.email}
+                      </p>
+                    </div>
 
-                    {userInfo?.role === "admin" && (
+                    {/* Menu Items */}
+                    <div className="py-2">
                       <Link
-                        to="/admin/users"
+                        to="/profile"
                         onClick={() => setIsProfileMenuOpen(false)}
                         className="flex items-center gap-3 px-4 py-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"
                       >
-                        <Users size={18} />
-                        <span className="text-sm">{t("nav.users")}</span>
+                        <User size={18} />
+                        <span className="text-sm">{t("nav.profile")}</span>
                       </Link>
-                    )}
 
-                    <button
-                      onClick={logout}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-zinc-400 hover:bg-red-500/10 hover:text-red-400 transition-colors"
-                    >
-                      <LogOut size={18} />
-                      <span className="text-sm">{t("nav.signOut")}</span>
-                    </button>
+                      <button
+                        onClick={toggleLanguage}
+                        className="w-full flex items-center gap-3 px-4 py-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"
+                      >
+                        <Languages size={18} />
+                        <span className="text-sm">
+                          {i18n.language === "es" ? "English" : "Español"}
+                        </span>
+                      </button>
+
+                      {userInfo?.role === "admin" && (
+                        <Link
+                          to="/admin/users"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"
+                        >
+                          <Users size={18} />
+                          <span className="text-sm">{t("nav.users")}</span>
+                        </Link>
+                      )}
+
+                      <button
+                        onClick={logout}
+                        className="w-full flex items-center gap-3 px-4 py-2 text-zinc-400 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                      >
+                        <LogOut size={18} />
+                        <span className="text-sm">{t("nav.signOut")}</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </>
-            )}
+                </>
+              )}
+            </div>
           </div>
         </div>
 
