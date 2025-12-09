@@ -15,7 +15,13 @@
     "type": "Type",
     "income": "Income",
     "expense": "Expense",
-    "select": "Select option"
+    "select": "Select option",
+    "day": "Day",
+    "month": "Month",
+    "all": "All",
+    "groupBy": "Group by",
+    "filter": "Filter",
+    "status": "Status"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -65,7 +71,41 @@
     "deleteTitle": "Delete Receipt",
     "deleteDesc": "Are you sure you want to delete this receipt? This action cannot be undone.",
     "deleteSuccess": "Receipt deleted successfully",
-    "deleteError": "Failed to delete receipt"
+    "deleteError": "Failed to delete receipt",
+    "receiptDetails": "Receipt Details",
+    "ocrResults": "OCR Results",
+    "status": "Status",
+    "detectedAmount": "Detected Amount",
+    "detectedDate": "Detected Date",
+    "detectedMerchant": "Detected Merchant",
+    "confidence": "Confidence",
+    "draftTransaction": "Draft Transaction",
+    "account": "Account",
+    "category": "Category",
+    "description": "Description",
+    "amount": "Amount",
+    "date": "Date",
+    "selectAccount": "Select an account",
+    "selectCategory": "Select a category",
+    "descriptionPlaceholder": "Enter description",
+    "confirmTransaction": "Confirm Transaction",
+    "deleteDraft": "Delete Draft",
+    "draftConfirmed": "Transaction confirmed successfully",
+    "confirmError": "Failed to confirm transaction",
+    "deleteDraftConfirm": "Are you sure you want to delete this draft transaction?",
+    "draftDeleted": "Draft transaction deleted",
+    "noDraftTransaction": "No draft transaction",
+    "noDraftTransactionDesc": "OCR did not detect enough information to create a draft transaction.",
+    "viewOcrText": "View OCR Text",
+    "noImage": "No image available",
+    "hasDraft": "Has Draft",
+    "clickToEnlarge": "Click to enlarge",
+    "status": {
+      "uploaded": "Uploaded",
+      "processing": "Processing",
+      "processed": "Processed",
+      "failed": "Failed"
+    }
   },
   "accounts": {
     "title": "Accounts",
@@ -108,10 +148,17 @@
     "newTransaction": "New Transaction",
     "loading": "Loading transactions...",
     "noTransactions": "No transactions yet",
-    "noTransactionsDesc": "Your transaction history will appear here. Start by adding a transaction."
+    "noTransactionsDesc": "Your transaction history will appear here. Start by adding a transaction.",
+    "income": "Income",
+    "expense": "Expense",
+    "transfer": "Transfer",
+    "draft": "Draft",
+    "recurring": "Recurring",
+    "ocr": "OCR"
   },
   "profile": {
     "title": "My Profile",
+    "subtitle": "Manage your account settings and preferences",
     "emailNotVerified": "Email not verified",
     "verifyEmailDesc": "Please verify your email address to access all features and secure your account.",
     "sendVerification": "Send Verification Email",
@@ -213,6 +260,7 @@
   },
   "categories": {
     "title": "Categories",
+    "subtitle": "Manage your income and expense categories",
     "add": "Add Category",
     "edit": "Edit Category",
     "name": "Name",
@@ -256,5 +304,27 @@
     "deleteError": "Failed to delete rule",
     "deleteTitle": "Delete Rule",
     "deleteMessage": "Are you sure you want to delete the rule \"{{name}}\"?"
+  },
+  "reports": {
+    "today": "Today",
+    "thisWeek": "This Week",
+    "thisMonth": "This Month",
+    "thisYear": "This Year",
+    "custom": "Custom",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "filters": "Filters",
+    "clearFilters": "Clear Filters",
+    "account": "Account",
+    "category": "Category",
+    "type": "Type",
+    "allAccounts": "All Accounts",
+    "allCategories": "All Categories",
+    "allTypes": "All Types",
+    "includeDrafts": "Include drafts",
+    "totalIncome": "Total Income",
+    "totalExpenses": "Total Expenses",
+    "netBalance": "Net Balance",
+    "transactions": "transactions"
   }
 }

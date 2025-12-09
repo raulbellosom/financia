@@ -6,6 +6,7 @@ import { Input } from "../components/ui/Input";
 import LocationSelector from "../components/LocationSelector";
 import ImageCropper from "../components/ImageCropper";
 import PageLayout from "../components/PageLayout";
+import ImageViewerModal from "../components/ImageViewerModal";
 import {
   User,
   Save,
@@ -43,6 +44,7 @@ export default function Profile() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [verificationSent, setVerificationSent] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   const { logout } = useAuth();
 
@@ -203,6 +205,7 @@ export default function Profile() {
   return (
     <PageLayout
       title={t("profile.title")}
+      subtitle={t("profile.subtitle")}
       icon={User}
       action={
         <div className="md:hidden">
@@ -255,7 +258,12 @@ export default function Profile() {
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
           <div className="flex flex-col items-center mb-8">
             <div className="relative group">
-              <div className="w-32 h-32 rounded-full overflow-hidden bg-zinc-800 border-4 border-zinc-800 shadow-xl">
+              <div
+                className={`w-32 h-32 rounded-full overflow-hidden bg-zinc-800 border-4 border-zinc-800 shadow-xl ${
+                  avatarUrl ? "cursor-pointer" : ""
+                }`}
+                onClick={() => avatarUrl && setIsImageModalOpen(true)}
+              >
                 {avatarUrl ? (
                   <img
                     src={avatarUrl}
@@ -276,7 +284,7 @@ export default function Profile() {
                   </div>
                 )}
               </div>
-              <label className="absolute bottom-0 right-0 p-2 bg-emerald-500 rounded-full text-black cursor-pointer hover:bg-emerald-400 transition-colors shadow-lg">
+              <label className="absolute bottom-0 right-0 p-2 bg-emerald-500 rounded-full text-black cursor-pointer hover:bg-emerald-400 transition-colors shadow-lg z-10">
                 <Camera size={20} />
                 <input
                   type="file"
@@ -409,6 +417,14 @@ export default function Profile() {
             onCancel={() => setIsCropping(false)}
           />
         )}
+
+        <ImageViewerModal
+          isOpen={isImageModalOpen}
+          onClose={() => setIsImageModalOpen(false)}
+          fileId={userInfo?.avatarFileId}
+          fileName="avatar.jpg"
+          bucketId={import.meta.env.VITE_APPWRITE_AVATARS_BUCKET_ID}
+        />
       </div>
     </PageLayout>
   );

@@ -1,0 +1,197 @@
+/**
+ * Date utility functions for period calculations and formatting
+ */
+
+/**
+ * Get the start of a period (day, week, month, year)
+ * @param {Date} date - Reference date
+ * @param {string} period - Period type: 'day', 'week', 'month', 'year'
+ * @returns {Date} Start of the period
+ */
+export const getStartOfPeriod = (date, period) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+
+  switch (period) {
+    case "day":
+      return d;
+    case "week":
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday as start
+      d.setDate(diff);
+      return d;
+    case "month":
+      d.setDate(1);
+      return d;
+    case "year":
+      d.setMonth(0, 1);
+      return d;
+    default:
+      return d;
+  }
+};
+
+/**
+ * Get the end of a period (day, week, month, year)
+ * @param {Date} date - Reference date
+ * @param {string} period - Period type: 'day', 'week', 'month', 'year'
+ * @returns {Date} End of the period
+ */
+export const getEndOfPeriod = (date, period) => {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+
+  switch (period) {
+    case "day":
+      return d;
+    case "week":
+      const day = d.getDay();
+      const diff = d.getDate() + (day === 0 ? 0 : 7 - day);
+      d.setDate(diff);
+      return d;
+    case "month":
+      d.setMonth(d.getMonth() + 1, 0);
+      return d;
+    case "year":
+      d.setMonth(11, 31);
+      return d;
+    default:
+      return d;
+  }
+};
+
+/**
+ * Get the previous period range
+ * @param {Date} startDate - Current period start
+ * @param {Date} endDate - Current period end
+ * @returns {Object} { startDate, endDate } for previous period
+ */
+export const getPreviousPeriod = (startDate, endDate) => {
+  const duration = endDate - startDate;
+  const prevEnd = new Date(startDate.getTime() - 1);
+  const prevStart = new Date(prevEnd.getTime() - duration);
+  return { startDate: prevStart, endDate: prevEnd };
+};
+
+/**
+ * Get the next period range
+ * @param {Date} startDate - Current period start
+ * @param {Date} endDate - Current period end
+ * @returns {Object} { startDate, endDate } for next period
+ */
+export const getNextPeriod = (startDate, endDate) => {
+  const duration = endDate - startDate;
+  const nextStart = new Date(endDate.getTime() + 1);
+  const nextEnd = new Date(nextStart.getTime() + duration);
+  return { startDate: nextStart, endDate: nextEnd };
+};
+
+/**
+ * Format a period label for display
+ * @param {Date} startDate - Period start
+ * @param {Date} endDate - Period end
+ * @param {string} locale - Locale for formatting
+ * @returns {string} Formatted period label
+ */
+export const formatPeriodLabel = (startDate, endDate, locale = "es-MX") => {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  // Same day
+  if (start.toDateString() === end.toDateString()) {
+    return start.toLocaleDateString(locale, {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  }
+
+  // Same month
+  if (
+    start.getMonth() === end.getMonth() &&
+    start.getFullYear() === end.getFullYear()
+  ) {
+    return start.toLocaleDateString(locale, {
+      month: "long",
+      year: "numeric",
+    });
+  }
+
+  // Same year
+  if (start.getFullYear() === end.getFullYear()) {
+    return `${start.toLocaleDateString(locale, {
+      month: "short",
+    })} - ${end.toLocaleDateString(locale, {
+      month: "short",
+      year: "numeric",
+    })}`;
+  }
+
+  // Different years
+  return `${start.toLocaleDateString(locale, {
+    month: "short",
+    year: "numeric",
+  })} - ${end.toLocaleDateString(locale, { month: "short", year: "numeric" })}`;
+};
+
+/**
+ * Group transactions by date
+ * @param {Array} transactions - Array of transactions
+ * @returns {Object} Transactions grouped by date string (YYYY-MM-DD)
+ */
+export const groupTransactionsByDate = (transactions) => {
+  const grouped = {};
+
+  transactions.forEach((tx) => {
+    const date = new Date(tx.date);
+    const dateKey = date.toISOString().split("T")[0]; // YYYY-MM-DD
+
+    if (!grouped[dateKey]) {
+      grouped[dateKey] = [];
+    }
+    grouped[dateKey].push(tx);
+  });
+
+  return grouped;
+};
+
+/**
+ * Get quick period presets
+ * @returns {Object} Period presets with start and end dates
+ */
+export const getQuickPeriods = () => {
+  const now = new Date();
+
+  return {
+    today: {
+      startDate: getStartOfPeriod(now, "day"),
+      endDate: getEndOfPeriod(now, "day"),
+    },
+    thisWeek: {
+      startDate: getStartOfPeriod(now, "week"),
+      endDate: getEndOfPeriod(now, "week"),
+    },
+    thisMonth: {
+      startDate: getStartOfPeriod(now, "month"),
+      endDate: getEndOfPeriod(now, "month"),
+    },
+    thisYear: {
+      startDate: getStartOfPeriod(now, "year"),
+      endDate: getEndOfPeriod(now, "year"),
+    },
+  };
+};
+
+/**
+ * Check if a date is within a range
+ * @param {Date} date - Date to check
+ * @param {Date} startDate - Range start
+ * @param {Date} endDate - Range end
+ * @returns {boolean} True if date is within range
+ */
+export const isDateInRange = (date, startDate, endDate) => {
+  const d = new Date(date);
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  return d >= start && d <= end;
+};

@@ -18,6 +18,7 @@ export default function ImageViewerModal({
   onClose,
   fileId,
   fileName,
+  bucketId = APPWRITE_CONFIG.RECEIPTS_BUCKET_ID,
 }) {
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
@@ -29,10 +30,7 @@ export default function ImageViewerModal({
   useEffect(() => {
     if (fileId && isOpen) {
       try {
-        const viewUrl = storage.getFileView(
-          APPWRITE_CONFIG.RECEIPTS_BUCKET_ID,
-          fileId
-        );
+        const viewUrl = storage.getFileView(bucketId, fileId);
         setImageUrl(viewUrl);
         setLoading(true);
       } catch (e) {
@@ -45,18 +43,15 @@ export default function ImageViewerModal({
       setImageUrl(null);
       setIsTweaking(false);
     }
-  }, [fileId, isOpen]);
+  }, [fileId, isOpen, bucketId]);
 
   const handleDownload = (e) => {
     e.stopPropagation();
     try {
-      const downloadUrl = storage.getFileDownload(
-        APPWRITE_CONFIG.RECEIPTS_BUCKET_ID,
-        fileId
-      );
+      const downloadUrl = storage.getFileDownload(bucketId, fileId);
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = fileName || "receipt.png";
+      link.download = fileName || "image.png";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

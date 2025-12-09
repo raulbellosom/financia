@@ -28,6 +28,7 @@ import {
   Briefcase,
   TrendingUp,
   TrendingDown,
+  Tags,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
@@ -211,8 +212,14 @@ export default function Categories() {
   return (
     <PageLayout
       title={t("categories.title")}
+      subtitle={t("categories.subtitle")}
+      icon={Tags}
       action={
-        <Button onClick={handleOpenCreate} icon={Plus}>
+        <Button
+          onClick={handleOpenCreate}
+          className="bg-emerald-500 hover:bg-emerald-600 text-zinc-950"
+        >
+          <Plus size={20} className="mr-2" />
           {t("categories.add")}
         </Button>
       }

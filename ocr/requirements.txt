@@ -2,3 +2,4 @@ appwrite==13.2.0
 pytesseract
 Pillow
 requests
+numpy

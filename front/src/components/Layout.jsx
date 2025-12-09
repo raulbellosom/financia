@@ -52,7 +52,8 @@ export default function Layout({ children }) {
   // Desktop navigation includes Profile
   const desktopNavigation = [
     ...navigation,
-    { name: t("nav.profile"), href: "/profile", icon: User },
+    // Profile moved to user menu
+    // { name: t("nav.profile"), href: "/profile", icon: User },
   ];
 
   if (userInfo?.role === "admin") {
@@ -99,53 +100,74 @@ export default function Layout({ children }) {
         </nav>
 
         <div className="mt-auto border-t border-zinc-800 pt-4">
-          {/* Language Switcher */}
-          <button
-            onClick={toggleLanguage}
-            className="w-full flex items-center gap-3 px-4 py-3 mb-2 text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-xl transition-all"
-            title="Switch Language"
-          >
-            <Languages size={20} />
-            <span className="text-sm font-medium">
-              {i18n.language === "es" ? "English" : "Español"}
-            </span>
-          </button>
+          <div className="relative group">
+            {/* User Info Trigger */}
+            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-zinc-900 transition-all text-left">
+              <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden shrink-0">
+                {userInfo?.avatarFileId ? (
+                  <img
+                    src={`https://appwrite.racoondevs.com/v1/storage/buckets/${
+                      import.meta.env.VITE_APPWRITE_AVATARS_BUCKET_ID
+                    }/files/${userInfo.avatarFileId}/view?project=${
+                      import.meta.env.VITE_APPWRITE_PROJECT_ID
+                    }`}
+                    alt="Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-zinc-500">
+                    <User size={20} />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-white truncate">
+                  {userInfo?.firstName} {userInfo?.lastName}
+                </p>
+                <p className="text-xs text-zinc-500 truncate">
+                  {userInfo?.email}
+                </p>
+              </div>
+              <ChevronDown
+                size={16}
+                className="text-zinc-500 group-hover:text-white transition-colors"
+              />
+            </button>
 
-          <div className="flex items-center gap-3 px-4 py-3 mb-2">
-            <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden shrink-0">
-              {userInfo?.avatarFileId ? (
-                <img
-                  src={`https://appwrite.racoondevs.com/v1/storage/buckets/${
-                    import.meta.env.VITE_APPWRITE_AVATARS_BUCKET_ID
-                  }/files/${userInfo.avatarFileId}/view?project=${
-                    import.meta.env.VITE_APPWRITE_PROJECT_ID
-                  }`}
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-zinc-500">
-                  <User size={20} />
-                </div>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
-                {userInfo?.firstName} {userInfo?.lastName}
-              </p>
-              <p className="text-xs text-zinc-500 truncate">
-                {userInfo?.email}
-              </p>
+            {/* Dropdown Menu */}
+            <div className="absolute bottom-full left-0 w-full mb-2 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-bottom translate-y-2 group-hover:translate-y-0 z-50">
+              {/* Profile Link */}
+              <Link
+                to="/profile"
+                className="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+              >
+                <User size={18} />
+                <span className="text-sm">{t("nav.profile")}</span>
+              </Link>
+
+              {/* Language Toggle */}
+              <button
+                onClick={toggleLanguage}
+                className="w-full flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors text-left"
+              >
+                <Languages size={18} />
+                <span className="text-sm">
+                  {i18n.language === "es" ? "English" : "Español"}
+                </span>
+              </button>
+
+              <div className="h-px bg-zinc-800 mx-2"></div>
+
+              {/* Logout */}
+              <button
+                onClick={logout}
+                className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors text-left"
+              >
+                <LogOut size={18} />
+                <span className="text-sm">{t("nav.signOut")}</span>
+              </button>
             </div>
           </div>
-
-          <button
-            onClick={logout}
-            className="w-full flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
-          >
-            <LogOut size={20} />
-            {t("nav.signOut")}
-          </button>
         </div>
       </aside>
 

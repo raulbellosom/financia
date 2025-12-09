@@ -1,18 +1,32 @@
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import { databases, storage } from "../lib/appwrite";
 import { Button } from "../components/ui/Button";
 import PageLayout from "../components/PageLayout";
 import DeleteConfirmationModal from "../components/ui/DeleteConfirmationModal";
-import ImageViewerModal from "../components/ImageViewerModal";
+import ReceiptDetailsModal from "../components/ReceiptDetailsModal";
+import { storage } from "../lib/appwrite";
 import { APPWRITE_CONFIG } from "../lib/constants";
-import { Receipt, Upload, Loader2, Trash2, FileText, Eye } from "lucide-react";
+import {
+  Receipt,
+  Upload,
+  Loader2,
+  Trash2,
+  FileText,
+  Eye,
+  DollarSign,
+  Calendar,
+  CheckCircle,
+  Filter,
+  Grid,
+  List,
+  LayoutGrid,
+} from "lucide-react";
 import toast from "react-hot-toast";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ID, Query } from "appwrite";
+import { useMemo } from "react";
+import { useReceipts } from "../hooks/useReceipts";
 import { useTranslation } from "react-i18next";
 import { useDateFormatter } from "../hooks/useDateFormatter";
 
+// Extracted Card Component for better state handling
 // Extracted Card Component for better state handling
 const ReceiptCard = ({ receipt, onDeleteRequest, onViewRequest }) => {
   const [imageError, setImageError] = useState(false);
@@ -26,10 +40,10 @@ const ReceiptCard = ({ receipt, onDeleteRequest, onViewRequest }) => {
       return storage.getFilePreview(
         APPWRITE_CONFIG.RECEIPTS_BUCKET_ID,
         fileId,
-        400, // width
-        400, // height
+        300, // width (smaller)
+        300, // height (smaller)
         "center", // gravity
-        80 // quality
+        60 // quality (lower for thumbnails)
       );
     } catch (e) {
       console.error(e);
@@ -38,11 +52,14 @@ const ReceiptCard = ({ receipt, onDeleteRequest, onViewRequest }) => {
   };
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden group hover:border-zinc-700 transition-all relative">
-      <div className="aspect-square bg-zinc-950 relative overflow-hidden">
+    <div
+      className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden group hover:border-zinc-700 transition-all relative cursor-pointer flex flex-col"
+      onClick={() => onViewRequest(receipt)}
+    >
+      <div className="aspect-[4/3] bg-zinc-950 relative overflow-hidden">
         {/* Fallback Icon */}
-        <div className="absolute inset-0 flex items-center justify-center text-zinc-700">
-          <FileText size={48} />
+        <div className="absolute inset-0 flex items-center justify-center text-zinc-800">
+          <FileText size={32} />
         </div>
 
         {/* Image */}
@@ -55,152 +72,134 @@ const ReceiptCard = ({ receipt, onDeleteRequest, onViewRequest }) => {
           />
         )}
 
-        {/* Actions Overlay */}
-        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-20">
-          <button
-            onClick={() => onViewRequest(receipt)}
-            className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors"
-            title={t("common.view")}
-          >
-            <Eye size={16} />
-          </button>
-          <button
-            onClick={() => onDeleteRequest(receipt)}
-            className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors"
-            title={t("common.delete")}
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      </div>
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-2">
+        {/* Status Badge (Overlay) */}
+        <div className="absolute top-2 right-2 z-20">
           <span
-            className={`text-xs font-medium px-2 py-1 rounded-full ${
+            className={`text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md border ${
               receipt.status === "processed"
-                ? "bg-emerald-500/10 text-emerald-500"
+                ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-500"
                 : receipt.status === "processing"
-                ? "bg-blue-500/10 text-blue-500"
-                : "bg-zinc-800 text-zinc-400"
+                ? "bg-blue-500/20 border-blue-500/30 text-blue-500"
+                : receipt.status === "failed"
+                ? "bg-red-500/20 border-red-500/30 text-red-500"
+                : "bg-zinc-500/20 border-zinc-500/30 text-zinc-400"
             }`}
           >
             {t(`status.${receipt.status}`, receipt.status)}
           </span>
-          <span className="text-xs text-zinc-500">
-            {formatDate(receipt.$createdAt)}
-          </span>
         </div>
-        {receipt.ocrText && (
-          <p className="text-sm text-zinc-300 line-clamp-2 mt-2">
-            {receipt.ocrText}
-          </p>
-        )}
+
+        {/* Actions Overlay */}
+        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-20">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewRequest(receipt);
+            }}
+            className="p-1.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors"
+            title={t("common.view")}
+          >
+            <Eye size={14} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteRequest(receipt);
+            }}
+            className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors"
+            title={t("common.delete")}
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      </div>
+
+      <div className="p-3 flex flex-col gap-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-zinc-500">
+            {formatDate(receipt.detectedDate || receipt.$createdAt)}
+          </span>
+          {receipt.detectedAmount && (
+            <span className="text-sm font-bold text-white">
+              ${receipt.detectedAmount.toFixed(2)}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
 export default function Receipts() {
-  const { userInfo } = useAuth();
-  const queryClient = useQueryClient();
-  const [uploading, setUploading] = useState(false);
   const { t } = useTranslation();
+  const {
+    receipts,
+    isLoading,
+    uploadReceipt,
+    isUploading,
+    deleteReceipt,
+    isDeleting,
+  } = useReceipts();
+
+  // UI State
+  const [groupBy, setGroupBy] = useState("day"); // 'day', 'month', 'all'
+  const [filterStatus, setFilterStatus] = useState("all"); // 'all', 'processed', 'processing', 'failed'
 
   // Modals State
   const [receiptToDelete, setReceiptToDelete] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const [receiptToView, setReceiptToView] = useState(null);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
-  // Fetch receipts with polling
-  const { data: receipts, isLoading } = useQuery({
-    queryKey: ["receipts", userInfo?.$id],
-    queryFn: async () => {
-      if (!userInfo) return [];
-      const response = await databases.listDocuments(
-        APPWRITE_CONFIG.DATABASE_ID,
-        APPWRITE_CONFIG.RECEIPTS_COLLECTION_ID,
-        [Query.equal("profile", userInfo.$id), Query.orderDesc("$createdAt")]
-      );
-      return response.documents;
-    },
-    enabled: !!userInfo,
-    refetchInterval: 5000,
-  });
+  // Grouping Logic
+  const groupedReceipts = useMemo(() => {
+    if (!receipts) return {};
 
-  // Upload mutation
-  const uploadReceiptMutation = useMutation({
-    mutationFn: async (file) => {
-      const fileResponse = await storage.createFile(
-        APPWRITE_CONFIG.RECEIPTS_BUCKET_ID,
-        ID.unique(),
-        file
-      );
+    // 1. Filter
+    const filtered = receipts.filter(
+      (r) => filterStatus === "all" || r.status === filterStatus
+    );
 
-      return await databases.createDocument(
-        APPWRITE_CONFIG.DATABASE_ID,
-        APPWRITE_CONFIG.RECEIPTS_COLLECTION_ID,
-        ID.unique(),
-        {
-          profile: userInfo.$id,
-          fileId: fileResponse.$id,
-          status: "uploaded",
-        }
-      );
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(["receipts"]);
-      toast.success(t("receipts.uploadSuccess"));
-    },
-    onError: (error) => {
-      console.error("Error uploading receipt:", error);
-      toast.error(t("receipts.uploadError"));
-    },
-  });
+    // 2. Group
+    if (groupBy === "all") {
+      return { [t("common.all")]: filtered };
+    }
 
-  // Delete mutation
-  const deleteReceiptMutation = useMutation({
-    mutationFn: async (receipt) => {
-      // 1. Delete file from storage (if exists)
-      if (receipt.fileId) {
-        try {
-          await storage.deleteFile(
-            APPWRITE_CONFIG.RECEIPTS_BUCKET_ID,
-            receipt.fileId
-          );
-        } catch (e) {
-          console.warn("File might already be deleted or not found:", e);
-        }
+    return filtered.reduce((groups, receipt) => {
+      const date = new Date(receipt.detectedDate || receipt.$createdAt);
+      let key = "";
+
+      if (groupBy === "day") {
+        key = date.toLocaleDateString(undefined, {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      } else if (groupBy === "month") {
+        key = date.toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "long",
+        });
       }
 
-      // 2. Delete document from database
-      await databases.deleteDocument(
-        APPWRITE_CONFIG.DATABASE_ID,
-        APPWRITE_CONFIG.RECEIPTS_COLLECTION_ID,
-        receipt.$id
-      );
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(["receipts"]);
-      toast.success(t("receipts.deleteSuccess"));
-      setReceiptToDelete(null);
-      setIsDeleteModalOpen(false);
-    },
-    onError: (error) => {
-      console.error("Error deleting receipt:", error);
-      toast.error(t("receipts.deleteError"));
-    },
-  });
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(receipt);
+      return groups;
+    }, {});
+  }, [receipts, groupBy, filterStatus, t]);
 
   const handleFileUpload = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      setUploading(true);
       try {
-        await uploadReceiptMutation.mutateAsync(file);
+        await uploadReceipt(file);
+        toast.success(t("receipts.uploadSuccess"));
+      } catch (error) {
+        console.error("Error uploading:", error);
+        toast.error(t("receipts.uploadError"));
       } finally {
-        setUploading(false);
         e.target.value = "";
       }
     }
@@ -211,14 +210,22 @@ export default function Receipts() {
     setIsDeleteModalOpen(true);
   };
 
-  const openViewModal = (receipt) => {
+  const openDetailsModal = (receipt) => {
     setReceiptToView(receipt);
-    setIsViewModalOpen(true);
+    setIsDetailsModalOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (receiptToDelete) {
-      deleteReceiptMutation.mutate(receiptToDelete);
+      try {
+        await deleteReceipt(receiptToDelete);
+        toast.success(t("receipts.deleteSuccess"));
+        setReceiptToDelete(null);
+        setIsDeleteModalOpen(false);
+      } catch (error) {
+        console.error("Error deleting:", error);
+        toast.error(t("receipts.deleteError"));
+      }
     }
   };
 
@@ -230,7 +237,7 @@ export default function Receipts() {
       action={
         <div className="flex gap-3">
           <label className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-medium px-4 py-2 rounded-xl cursor-pointer transition-colors">
-            {uploading ? (
+            {isUploading ? (
               <Loader2 size={20} className="animate-spin" />
             ) : (
               <Upload size={20} />
@@ -241,12 +248,58 @@ export default function Receipts() {
               className="hidden"
               accept="image/*,application/pdf"
               onChange={handleFileUpload}
-              disabled={uploading}
+              disabled={isUploading}
             />
           </label>
         </div>
       }
     >
+      {/* Toolbar */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6 justify-between items-center bg-zinc-900/50 p-4 rounded-xl border border-zinc-800/50">
+        {/* Group By */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-zinc-400 flex items-center gap-1">
+            <Grid size={16} />
+            {t("common.groupBy")}:
+          </span>
+          <div className="flex bg-zinc-900 rounded-lg p-1 border border-zinc-800">
+            {["day", "month", "all"].map((g) => (
+              <button
+                key={g}
+                onClick={() => setGroupBy(g)}
+                className={`px-3 py-1 text-xs rounded-md transition-all ${
+                  groupBy === g
+                    ? "bg-zinc-800 text-white font-medium shadow-sm"
+                    : "text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                {t(`common.${g}`)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Filter */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-zinc-400 flex items-center gap-1">
+            <Filter size={16} />
+            {t("common.filter")}:
+          </span>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="bg-zinc-900 border border-zinc-800 text-zinc-300 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-1.5"
+          >
+            <option value="all">{t("common.all")}</option>
+            <option value="processed">{t("receipts.status.processed")}</option>
+            <option value="processing">
+              {t("receipts.status.processing")}
+            </option>
+            <option value="failed">{t("receipts.status.failed")}</option>
+          </select>
+        </div>
+      </div>
+
       {isLoading ? (
         <div className="text-center py-12 text-zinc-500">
           {t("common.loading")}
@@ -264,14 +317,26 @@ export default function Receipts() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {receipts.map((receipt) => (
-            <ReceiptCard
-              key={receipt.$id}
-              receipt={receipt}
-              onDeleteRequest={openDeleteModal}
-              onViewRequest={openViewModal}
-            />
+        <div className="space-y-8">
+          {Object.entries(groupedReceipts).map(([group, items]) => (
+            <div key={group}>
+              <h3 className="text-lg font-medium text-zinc-400 mb-4 sticky top-0 bg-zinc-950/80 backdrop-blur-sm py-2 z-10">
+                {group}
+                <span className="ml-2 text-xs bg-zinc-800 text-zinc-500 px-2 py-0.5 rounded-full">
+                  {items.length}
+                </span>
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {items.map((receipt) => (
+                  <ReceiptCard
+                    key={receipt.$id}
+                    receipt={receipt}
+                    onDeleteRequest={openDeleteModal}
+                    onViewRequest={openDetailsModal}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}
@@ -283,15 +348,14 @@ export default function Receipts() {
         onConfirm={confirmDelete}
         title={t("receipts.deleteTitle")}
         description={t("receipts.deleteDesc")}
-        isDeleting={deleteReceiptMutation.isPending}
+        isDeleting={isDeleting}
       />
 
-      {/* View Modal */}
-      <ImageViewerModal
-        isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        fileId={receiptToView?.fileId}
-        fileName="receipt"
+      {/* Receipt Details Modal */}
+      <ReceiptDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        receipt={receiptToView}
       />
     </PageLayout>
   );

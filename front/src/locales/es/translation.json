@@ -15,7 +15,13 @@
     "type": "Tipo",
     "income": "Ingreso",
     "expense": "Gasto",
-    "select": "Seleccionar opción"
+    "select": "Seleccionar opción",
+    "day": "Día",
+    "month": "Mes",
+    "all": "Todos",
+    "groupBy": "Agrupar por",
+    "filter": "Filtrar",
+    "status": "Estado"
   },
   "nav": {
     "dashboard": "Panel",
@@ -65,7 +71,41 @@
     "deleteTitle": "Eliminar Recibo",
     "deleteDesc": "¿Estás seguro de que quieres eliminar este recibo? Esta acción no se puede deshacer.",
     "deleteSuccess": "Recibo eliminado exitosamente",
-    "deleteError": "Error al eliminar recibo"
+    "deleteError": "Error al eliminar recibo",
+    "receiptDetails": "Detalles del Recibo",
+    "ocrResults": "Resultados OCR",
+    "status": "Estado",
+    "detectedAmount": "Monto Detectado",
+    "detectedDate": "Fecha Detectada",
+    "detectedMerchant": "Comercio Detectado",
+    "confidence": "Confianza",
+    "draftTransaction": "Transacción Borrador",
+    "account": "Cuenta",
+    "category": "Categoría",
+    "description": "Descripción",
+    "amount": "Monto",
+    "date": "Fecha",
+    "selectAccount": "Selecciona una cuenta",
+    "selectCategory": "Selecciona una categoría",
+    "descriptionPlaceholder": "Ingresa descripción",
+    "confirmTransaction": "Confirmar Transacción",
+    "deleteDraft": "Eliminar Borrador",
+    "draftConfirmed": "Transacción confirmada exitosamente",
+    "confirmError": "Error al confirmar transacción",
+    "deleteDraftConfirm": "¿Estás seguro de que quieres eliminar esta transacción borrador?",
+    "draftDeleted": "Transacción borrador eliminada",
+    "noDraftTransaction": "Sin transacción borrador",
+    "noDraftTransactionDesc": "OCR no detectó suficiente información para crear una transacción borrador.",
+    "viewOcrText": "Ver Texto OCR",
+    "noImage": "No hay imagen disponible",
+    "hasDraft": "Tiene Borrador",
+    "clickToEnlarge": "Clic para ampliar",
+    "status": {
+      "uploaded": "Subido",
+      "processing": "Procesando",
+      "processed": "Procesado",
+      "failed": "Fallido"
+    }
   },
   "accounts": {
     "title": "Cuentas",
@@ -108,10 +148,17 @@
     "newTransaction": "Nuevo Movimiento",
     "loading": "Cargando movimientos...",
     "noTransactions": "Aún no hay movimientos",
-    "noTransactionsDesc": "Tu historial de movimientos aparecerá aquí. Empieza agregando uno."
+    "noTransactionsDesc": "Tu historial de movimientos aparecerá aquí. Empieza agregando uno.",
+    "income": "Ingreso",
+    "expense": "Gasto",
+    "transfer": "Transferencia",
+    "draft": "Borrador",
+    "recurring": "Recurrente",
+    "ocr": "OCR"
   },
   "profile": {
     "title": "Mi Perfil",
+    "subtitle": "Gestiona la configuración y preferencias de tu cuenta",
     "emailNotVerified": "Correo no verificado",
     "verifyEmailDesc": "Por favor verifica tu correo para acceder a todas las funciones y asegurar tu cuenta.",
     "sendVerification": "Enviar Correo de Verificación",
@@ -213,6 +260,7 @@
   },
   "categories": {
     "title": "Categorías",
+    "subtitle": "Gestiona tus categorías de ingresos y gastos",
     "add": "Agregar Categoría",
     "edit": "Editar Categoría",
     "name": "Nombre",
@@ -256,5 +304,27 @@
     "deleteError": "Error al eliminar la regla",
     "deleteTitle": "Eliminar Regla",
     "deleteMessage": "¿Estás seguro de que deseas eliminar la regla \"{{name}}\"?"
+  },
+  "reports": {
+    "today": "Hoy",
+    "thisWeek": "Esta Semana",
+    "thisMonth": "Este Mes",
+    "thisYear": "Este Año",
+    "custom": "Personalizado",
+    "startDate": "Fecha Inicio",
+    "endDate": "Fecha Fin",
+    "filters": "Filtros",
+    "clearFilters": "Limpiar Filtros",
+    "account": "Cuenta",
+    "category": "Categoría",
+    "type": "Tipo",
+    "allAccounts": "Todas las Cuentas",
+    "allCategories": "Todas las Categorías",
+    "allTypes": "Todos los Tipos",
+    "includeDrafts": "Incluir borradores",
+    "totalIncome": "Ingresos Totales",
+    "totalExpenses": "Gastos Totales",
+    "netBalance": "Balance Neto",
+    "transactions": "movimientos"
   }
 }
