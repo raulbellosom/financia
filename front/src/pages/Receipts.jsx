@@ -56,7 +56,7 @@ const ReceiptCard = ({ receipt, onDeleteRequest, onViewRequest }) => {
       className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden group hover:border-zinc-700 transition-all relative cursor-pointer flex flex-col"
       onClick={() => onViewRequest(receipt)}
     >
-      <div className="aspect-[4/3] bg-zinc-950 relative overflow-hidden">
+      <div className="aspect-4/3 bg-zinc-950 relative overflow-hidden">
         {/* Fallback Icon */}
         <div className="absolute inset-0 flex items-center justify-center text-zinc-800">
           <FileText size={32} />

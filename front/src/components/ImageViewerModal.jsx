@@ -69,7 +69,7 @@ export default function ImageViewerModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden">
+        <div className="fixed inset-0 z-100 flex items-center justify-center overflow-hidden">
           {/* Glass Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
