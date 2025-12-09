@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ArrowRightLeft, Plus, TrendingUp, TrendingDown } from "lucide-react";
-import { Button } from "../components/Button";
+import { Button } from "../components/ui/Button";
 import TransactionModal from "../components/TransactionModal";
 import PageLayout from "../components/PageLayout";
 import { useTransactions } from "../hooks/useTransactions";

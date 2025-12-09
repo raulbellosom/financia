@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { APPWRITE_CONFIG } from "../lib/constants";
-import { Button } from "../components/Button";
-import { Input } from "../components/Input";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
 import PageLayout from "../components/PageLayout";
 import {
   Users,
@@ -12,6 +12,7 @@ import {
   Shield,
   Ban,
   Trash2,
+  X,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
@@ -743,25 +744,5 @@ export default function AdminUsers() {
         </div>
       )}
     </PageLayout>
-  );
-}
-
-function X({ size, className }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
   );
 }

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { databases, storage } from "../lib/appwrite";
-import { Button } from "../components/Button";
+import { Button } from "../components/ui/Button";
 import PageLayout from "../components/PageLayout";
-import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
+import DeleteConfirmationModal from "../components/ui/DeleteConfirmationModal";
 import ImageViewerModal from "../components/ImageViewerModal";
 import { APPWRITE_CONFIG } from "../lib/constants";
 import { Receipt, Upload, Loader2, Trash2, FileText, Eye } from "lucide-react";

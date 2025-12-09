@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { databases, storage, account } from "../lib/appwrite";
-import { Button } from "../components/Button";
-import { Input } from "../components/Input";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
 import LocationSelector from "../components/LocationSelector";
 import ImageCropper from "../components/ImageCropper";
 import PageLayout from "../components/PageLayout";
@@ -25,6 +25,7 @@ export default function Profile() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
+    username: "",
     firstName: "",
     lastName: "",
     country: "MX",
@@ -56,6 +57,7 @@ export default function Profile() {
     if (userInfo) {
       setFormData((prev) => ({
         ...prev,
+        username: userInfo.username || "",
         firstName: userInfo.firstName || "",
         lastName: userInfo.lastName || "",
         country: userInfo.country || "MX",
@@ -145,6 +147,7 @@ export default function Profile() {
         import.meta.env.VITE_APPWRITE_USERS_INFO_COLLECTION_ID,
         userInfo.$id,
         {
+          username: data.username,
           firstName: data.firstName,
           lastName: data.lastName,
           country: data.country,
@@ -289,6 +292,14 @@ export default function Profile() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <Input
+              label={t("profile.username")}
+              value={formData.username}
+              onChange={(e) =>
+                setFormData({ ...formData, username: e.target.value })
+              }
+              placeholder="Username"
+            />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
                 label={t("profile.firstName")}

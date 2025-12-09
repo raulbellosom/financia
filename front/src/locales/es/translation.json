@@ -68,7 +68,15 @@
     "nameLabel": "Nombre de la Cuenta",
     "namePlaceholder": "ej. Cartera Principal",
     "typeLabel": "Tipo",
+    "institutionLabel": "Banco/Institución",
+    "cardLast4Label": "Últimos 4 Dígitos",
+    "billingDayLabel": "Día de Corte",
+    "dueDayLabel": "Día Límite de Pago",
+    "creditLimitLabel": "Límite de Crédito",
+    "optional": "(Opcional)",
     "initialBalanceLabel": "Balance Inicial",
+    "colorLabel": "Color",
+    "iconLabel": "Icono",
     "createButton": "Crear Cuenta",
     "types": {
       "cash": "Efectivo",
@@ -79,7 +87,11 @@
       "other": "Otro"
     },
     "createSuccess": "Cuenta creada exitosamente",
-    "createError": "Error al crear cuenta"
+    "createError": "Error al crear cuenta",
+    "editAccountTitle": "Editar Cuenta",
+    "updateButton": "Actualizar Cuenta",
+    "updateSuccess": "Cuenta actualizada exitosamente",
+    "updateError": "Error al actualizar cuenta"
   },
   "transactions": {
     "title": "Movimientos",
@@ -96,6 +108,7 @@
     "sendVerification": "Enviar Correo de Verificación",
     "verificationSent": "¡Correo de verificación enviado! Revisa tu bandeja de entrada.",
     "uploadPhoto": "Haz clic en el icono de cámara para subir nueva foto",
+    "username": "Nombre de usuario",
     "firstName": "Nombre",
     "lastName": "Apellido",
     "country": "País",
@@ -165,20 +178,6 @@
       "selectAccount": "Selecciona una cuenta",
       "create": "Crear Movimiento",
       "success": "Movimiento creado exitosamente",
-      "error": "Error al crear movimiento"
-    },
-    "deleteModal": {
-      "defaultTitle": "Eliminar Elemento",
-      "defaultDesc": "¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer.",
-      "cancel": "Cancelar",
-      "delete": "Eliminar"
-    },
-    "locationSelector": {
-      "label": "Ubicación",
-      "selectCountry": "Seleccionar País",
-      "search": "Buscar {{mode}}...",
-      "modeCountry": "país",
-      "modeState": "estado",
       "back": "Volver a Países",
       "noResults": "No se encontraron resultados"
     },
@@ -189,6 +188,17 @@
       "flipV": "Voltear Vertical",
       "cancel": "Cancelar",
       "apply": "Aplicar Recorte"
+    },
+    "deleteModal": {
+      "defaultTitle": "Eliminar Elemento",
+      "defaultDesc": "¿Estás seguro de que quieres eliminar este elemento? Esta acción no se puede deshacer.",
+      "title": "Eliminar Cuenta",
+      "description": "¿Estás seguro de que quieres eliminar esta cuenta? Esto no eliminará las transacciones asociadas, pero ya no podrás seleccionarla.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar",
+      "delete": "Eliminar",
+      "success": "{{item}} eliminada exitosamente",
+      "error": "Error al eliminar el elemento"
     }
   }
 }
