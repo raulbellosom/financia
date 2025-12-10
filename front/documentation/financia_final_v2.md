@@ -186,7 +186,7 @@ Borrado físico al borrar usuario en Auth.
 
 profile — Relationship (users_info)  
 name — String  
-type — Enum(cash, debit, credit, savings, wallet, other)  
+type — Enum(cash, debit, credit, savings, investment, wallet, other)  
 institution — String  
 currency — String  
 initialBalance — Float  
@@ -200,6 +200,11 @@ cardLast4 — String(4)
 billingDay — Integer (1–31)  
 dueDay — Integer (1–31)  
 creditLimit — Float
+
+### Nuevos para inversiones
+
+yieldRate — Float (min: 0)  
+yieldFrequency — Enum(daily, weekly, monthly, annual)
 
 isArchived — Boolean  
 sortOrder — Integer
@@ -384,7 +389,9 @@ Este plan define los objetivos tangibles para migrar y completar la aplicación 
   - `billingDay` (Int, 1-31)
   - `dueDay` (Int, 1-31)
   - `creditLimit` (Float)
-  - `type` (Actualizar Enum: cash, debit, credit, savings, wallet, other)
+  - `yieldRate` (Float, min: 0)
+  - `yieldFrequency` (Enum: daily, weekly, monthly, annual)
+  - `type` (Actualizar Enum: cash, debit, credit, savings, investment, wallet, other)
 - [ ] **Relaciones**: Asegurar Many-to-one con `users_info`.
 - [ ] **Validación UI**: El formulario de "Nueva Cuenta" debe pedir datos bancarios si se selecciona "Tarjeta de Crédito".
 

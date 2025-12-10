@@ -155,6 +155,8 @@
     "billingDayLabel": "Día de Corte",
     "dueDayLabel": "Día Límite de Pago",
     "creditLimitLabel": "Límite de Crédito",
+    "yieldRateLabel": "Tasa de Rendimiento (%)",
+    "yieldFrequencyLabel": "Frecuencia de Rendimiento",
     "optional": "(Opcional)",
     "initialBalanceLabel": "Balance Inicial",
     "colorLabel": "Color",
@@ -165,8 +167,14 @@
       "debit": "Tarjeta de Débito",
       "credit": "Tarjeta de Crédito",
       "savings": "Ahorros",
+      "investment": "Inversión",
       "wallet": "Cartera",
       "other": "Otro"
+    },
+    "frequencies": {
+      "annual": "Anual",
+      "monthly": "Mensual",
+      "daily": "Diaria"
     },
     "createSuccess": "Cuenta creada exitosamente",
     "createError": "Error al crear cuenta",

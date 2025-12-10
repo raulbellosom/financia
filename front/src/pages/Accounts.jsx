@@ -17,6 +17,12 @@ import {
   Landmark,
   Pencil,
   Trash2,
+  TrendingUp,
+  Bitcoin,
+  Briefcase,
+  Building2,
+  Gem,
+  Lock,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
@@ -28,6 +34,12 @@ const ICONS = [
   { id: "card", component: CreditCard },
   { id: "dollar", component: CircleDollarSign },
   { id: "piggy", component: PiggyBank },
+  { id: "investment", component: TrendingUp },
+  { id: "crypto", component: Bitcoin },
+  { id: "business", component: Briefcase },
+  { id: "building", component: Building2 },
+  { id: "asset", component: Gem },
+  { id: "safe", component: Lock },
 ];
 
 // Tailwind 500 shades
@@ -35,11 +47,19 @@ const COLORS = [
   "#10b981", // emerald
   "#3b82f6", // blue
   "#6366f1", // indigo
+  "#8b5cf6", // violet
   "#a855f7", // purple
+  "#d946ef", // fuchsia
   "#ec4899", // pink
   "#f43f5e", // rose
+  "#ef4444", // red
   "#f97316", // orange
   "#eab308", // yellow
+  "#84cc16", // lime
+  "#14b8a6", // teal
+  "#06b6d4", // cyan
+  "#0ea5e9", // sky
+  "#64748b", // slate
   "#71717a", // zinc
 ];
 
@@ -72,6 +92,8 @@ export default function Accounts() {
     billingDay: "",
     dueDay: "",
     creditLimit: "",
+    yieldRate: "",
+    yieldFrequency: "annual",
     color: "#10b981",
     icon: "wallet",
   };
@@ -96,6 +118,8 @@ export default function Accounts() {
       billingDay: account.billingDay || "",
       dueDay: account.dueDay || "",
       creditLimit: account.creditLimit || "",
+      yieldRate: account.yieldRate || "",
+      yieldFrequency: account.yieldFrequency || "annual",
       color: account.color || "#10b981",
       icon: account.icon || "wallet",
     });
@@ -147,6 +171,11 @@ export default function Accounts() {
         payload.creditLimit = parseFloat(formData.creditLimit) || 0;
       }
 
+      if (formData.type === "investment") {
+        payload.yieldRate = parseFloat(formData.yieldRate) || 0;
+        payload.yieldFrequency = formData.yieldFrequency;
+      }
+
       if (editingId) {
         await updateAccount({ id: editingId, data: payload });
         toast.success(t("accounts.updateSuccess"));
@@ -177,8 +206,15 @@ export default function Accounts() {
     { value: "debit", label: t("accounts.types.debit") },
     { value: "credit", label: t("accounts.types.credit") },
     { value: "savings", label: t("accounts.types.savings") },
+    { value: "investment", label: t("accounts.types.investment") },
     { value: "wallet", label: t("accounts.types.wallet") },
     { value: "other", label: t("accounts.types.other") },
+  ];
+
+  const yieldFrequencyOptions = [
+    { value: "annual", label: t("accounts.frequencies.annual") },
+    { value: "monthly", label: t("accounts.frequencies.monthly") },
+    { value: "daily", label: t("accounts.frequencies.daily") },
   ];
 
   return (
@@ -445,6 +481,49 @@ export default function Accounts() {
                     />
                   </div>
                 </>
+              )}
+
+              {formData.type === "investment" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-1">
+                      {t("accounts.yieldRateLabel")}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="10.5"
+                      value={formData.yieldRate}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        if (val < 0) return; // Prevent negative values
+                        setFormData({
+                          ...formData,
+                          yieldRate: e.target.value,
+                        });
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "-" || e.key === "e") {
+                          e.preventDefault();
+                        }
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Select
+                      label={t("accounts.yieldFrequencyLabel")}
+                      options={yieldFrequencyOptions}
+                      value={formData.yieldFrequency}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          yieldFrequency: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">

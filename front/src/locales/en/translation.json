@@ -155,6 +155,8 @@
     "billingDayLabel": "Billing Day",
     "dueDayLabel": "Due Day",
     "creditLimitLabel": "Credit Limit",
+    "yieldRateLabel": "Yield Rate (%)",
+    "yieldFrequencyLabel": "Yield Frequency",
     "optional": "(Optional)",
     "initialBalanceLabel": "Initial Balance",
     "colorLabel": "Color",
@@ -165,8 +167,14 @@
       "debit": "Debit Card",
       "credit": "Credit Card",
       "savings": "Savings",
+      "investment": "Investment",
       "wallet": "Wallet",
       "other": "Other"
+    },
+    "frequencies": {
+      "annual": "Annual",
+      "monthly": "Monthly",
+      "daily": "Daily"
     },
     "createSuccess": "Account created successfully",
     "createError": "Failed to create account",
