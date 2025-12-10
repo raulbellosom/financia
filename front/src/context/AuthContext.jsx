@@ -143,6 +143,16 @@ export const AuthProvider = ({ children }) => {
       await refetchUser();
       return { success: true };
     } catch (error) {
+      console.error("Login error:", error);
+      if (error.code === 429) {
+        return {
+          success: false,
+          error: t(
+            "auth.rateLimitExceeded",
+            "Too many attempts. Please try again later."
+          ),
+        };
+      }
       return { success: false, error: error.message };
     }
   };

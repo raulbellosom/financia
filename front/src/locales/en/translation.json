@@ -98,7 +98,8 @@
     "invalidToken": "Invalid or missing token",
     "enterNewPassword": "Enter your new password",
     "newPassword": "New Password",
-    "confirmPassword": "Confirm Password"
+    "confirmPassword": "Confirm Password",
+    "rateLimitExceeded": "Too many attempts. Please try again later."
   },
   "dashboard": {
     "hello": "Hello, {{name}}",

@@ -98,7 +98,8 @@
     "invalidToken": "Token inválido o faltante",
     "enterNewPassword": "Ingresa tu nueva contraseña",
     "newPassword": "Nueva Contraseña",
-    "confirmPassword": "Confirmar Contraseña"
+    "confirmPassword": "Confirmar Contraseña",
+    "rateLimitExceeded": "Demasiados intentos. Por favor intenta de nuevo más tarde."
   },
   "dashboard": {
     "hello": "Hola, {{name}}",
