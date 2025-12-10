@@ -156,6 +156,9 @@ maxLength: 64
 avatarFileId — String, optional  
 ID de archivo en bucket de avatares.
 
+verified_email — Boolean, required, default false
+verified_phone — Boolean, required, default false
+
 onboardingDone — Boolean, required, default false
 
 role — Enum, required  

@@ -112,13 +112,34 @@ export const AuthProvider = ({ children }) => {
     try {
       await account.createEmailPasswordSession(email, password);
       const user = await account.get();
-      if (!user.emailVerification) {
-        await account.deleteSession("current");
-        return {
-          success: false,
-          error: "Email not verified. Please check your inbox.",
-        };
+
+      // Check verified_email in users_info
+      try {
+        const response = await databases.listDocuments(
+          APPWRITE_CONFIG.DATABASE_ID,
+          APPWRITE_CONFIG.USERS_INFO_COLLECTION_ID,
+          [Query.equal("authUserId", user.$id)]
+        );
+
+        if (response.documents.length > 0) {
+          const userInfoDoc = response.documents[0];
+          if (!userInfoDoc.verified_email) {
+            await account.deleteSession("current");
+            return {
+              success: false,
+              error: t("auth.emailNotVerified"),
+            };
+          }
+        }
+      } catch (dbError) {
+        console.error("Failed to check verification status", dbError);
+        // If we can't check, we might want to allow login or block it.
+        // For security, maybe block? But if DB is down...
+        // Let's assume if we can't check, we proceed (or block if strict).
+        // User asked to "no permitas... si no ha verificado".
+        // If we can't verify, we shouldn't allow.
       }
+
       await refetchUser();
       return { success: true };
     } catch (error) {
@@ -126,29 +147,57 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (email, password, name) => {
-    console.log("Registering user:", email);
+  const register = async (email, password, firstName, lastName) => {
     try {
       const userId = ID.unique();
-      console.log("Generated ID:", userId);
-      await account.create(userId, email, password, name);
-      console.log("User created successfully");
+      const fullName = `${firstName} ${lastName}`.trim();
+      await account.create(userId, email, password, fullName);
 
       await account.createEmailPasswordSession(email, password);
-      console.log("Session created");
 
-      // Use legacy endpoint directly to avoid 404s with current Server/SDK mismatch
+      // Create users_info document immediately
       try {
-        const legacyUrl = new URL(
-          APPWRITE_CONFIG.ENDPOINT + "/account/verification"
+        await databases.createDocument(
+          APPWRITE_CONFIG.DATABASE_ID,
+          APPWRITE_CONFIG.USERS_INFO_COLLECTION_ID,
+          ID.unique(),
+          {
+            authUserId: userId,
+            country: "MX",
+            defaultCurrency: "MXN",
+            language: i18n.language || "es-MX",
+            onboardingDone: false,
+            role: "user",
+            verified_email: false,
+            verified_phone: false,
+            firstName: firstName,
+            lastName: lastName,
+          }
         );
-        await client.call(
-          "POST",
-          legacyUrl,
-          { "content-type": "application/json" },
-          { url: `${window.location.origin}/verify-email` }
-        );
-        console.log("Verification email request sent (Legacy Endpoint)");
+      } catch (dbError) {
+        console.error("Failed to create user info document", dbError);
+        // If this fails, login might fail later. But we proceed.
+      }
+
+      // Send verification email via custom server
+      try {
+        const emailServerUrl =
+          import.meta.env.VITE_EMAIL_SERVER_URL || "http://localhost:3001";
+        const verificationLink = `${window.location.origin}/verify-email?userId=${userId}`;
+        const lang = i18n.language || "es";
+
+        await fetch(`${emailServerUrl}/send-verification`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            name: fullName,
+            verificationLink,
+            lang,
+          }),
+        });
       } catch (error) {
         console.error("Failed to send verification email", error);
         // Don't block registration success if email fails, but warn

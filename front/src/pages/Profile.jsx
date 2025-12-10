@@ -46,7 +46,6 @@ export default function Profile() {
   const [isCropping, setIsCropping] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(null);
-  const [verificationSent, setVerificationSent] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   // Password change state
@@ -201,19 +200,6 @@ export default function Profile() {
     updateProfileMutation.mutate(formData);
   };
 
-  const handleSendVerification = async () => {
-    try {
-      await account.createVerification(
-        `${window.location.origin}/verify-email`
-      );
-      setVerificationSent(true);
-      toast.success(t("profile.verificationSent"));
-    } catch (error) {
-      console.error("Error sending verification email:", error);
-      toast.error("Failed to send verification email");
-    }
-  };
-
   const handlePasswordChange = async (e) => {
     e.preventDefault();
 
@@ -277,39 +263,6 @@ export default function Profile() {
       }
     >
       <div className="max-w-2xl mx-auto mb-20 md:mb-0">
-        {/* Email Verification Warning */}
-        {!user.emailVerification && (
-          <div className="mb-6 bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 flex items-start gap-3">
-            <AlertTriangle
-              className="text-yellow-500 shrink-0 mt-0.5"
-              size={20}
-            />
-            <div className="flex-1">
-              <h3 className="text-yellow-500 font-medium mb-1">
-                {t("profile.emailNotVerified")}
-              </h3>
-              <p className="text-sm text-yellow-500/80 mb-3">
-                {t("profile.verifyEmailDesc")}
-              </p>
-              {!verificationSent ? (
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={handleSendVerification}
-                  className="bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30 border-transparent"
-                >
-                  <Mail size={16} className="mr-2" />
-                  {t("profile.sendVerification")}
-                </Button>
-              ) : (
-                <p className="text-sm text-emerald-500 font-medium">
-                  {t("profile.verificationSent")}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
           <div className="flex flex-col items-center mb-8">
             <div className="relative group">

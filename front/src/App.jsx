@@ -16,6 +16,7 @@ import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import VerifyEmail from "./pages/VerifyEmail";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Accounts from "./pages/Accounts";
 import AccountDetails from "./pages/AccountDetails";
@@ -39,6 +40,7 @@ function App() {
               <Route path="/register" element={<Register />} />
             </Route>
             <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             <Route element={<PrivateRoute />}>
               <Route

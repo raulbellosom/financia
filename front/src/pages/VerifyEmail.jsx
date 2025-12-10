@@ -15,36 +15,33 @@ export default function VerifyEmail() {
 
   useEffect(() => {
     const userId = searchParams.get("userId");
-    const secret = searchParams.get("secret");
 
-    if (!userId || !secret) {
+    if (!userId) {
       setStatus("error");
       return;
     }
 
     const verify = async () => {
       try {
-        // Use legacy endpoint directly to avoid 404s
-        const legacyUrl = new URL(
-          APPWRITE_CONFIG.ENDPOINT + "/account/verification"
-        );
-        await client.call(
-          "PUT",
-          legacyUrl,
-          { "content-type": "application/json" },
-          { userId, secret }
-        );
-        setStatus("success");
+        const emailServerUrl =
+          import.meta.env.VITE_EMAIL_SERVER_URL || "http://localhost:3001";
+
+        const response = await fetch(`${emailServerUrl}/verify-account`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userId }),
+        });
+
+        if (response.ok) {
+          setStatus("success");
+        } else {
+          throw new Error("Verification failed");
+        }
       } catch (error) {
         console.error("Verification failed", error);
-        // Try modern endpoint just in case, or just fail
-        try {
-          await account.updateVerification({ userId, secret });
-          setStatus("success");
-        } catch (modernError) {
-          console.error("Modern verification also failed", modernError);
-          setStatus("error");
-        }
+        setStatus("error");
       }
     };
 

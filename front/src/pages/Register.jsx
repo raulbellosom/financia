@@ -3,30 +3,31 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
-import { Wallet, Mail } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import Logo from "../components/Logo";
+import { Languages } from "lucide-react";
 
 export default function Register() {
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const result = await register(email, password, name);
+    const result = await register(email, password, firstName, lastName);
     setLoading(false);
 
     if (result.success) {
-      setSuccess(true);
-      toast.success(t("auth.verificationSent", "Verification email sent!"));
+      toast.success(t("auth.accountCreated"));
+      navigate("/login");
     } else {
       if (result.code === 409) {
         toast.error(t("auth.userAlreadyExists", "User already exists"));
@@ -36,39 +37,26 @@ export default function Register() {
     }
   };
 
-  if (success) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 p-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md bg-zinc-900/50 p-8 rounded-3xl border border-zinc-800/50 backdrop-blur-xl text-center space-y-6"
-        >
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-500 mb-4">
-            <Mail className="w-8 h-8" />
-          </div>
-          <h1 className="text-2xl font-bold text-white">
-            {t("auth.checkEmail", "Check your email")}
-          </h1>
-          <p className="text-zinc-400">
-            {t(
-              "auth.checkEmailDesc",
-              "We've sent a verification link to your email address. Please verify your account to log in."
-            )}
-          </p>
-          <Button
-            onClick={() => navigate("/login")}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold"
-          >
-            {t("auth.goToLogin", "Go to Login")}
-          </Button>
-        </motion.div>
-      </div>
-    );
-  }
+  const toggleLanguage = () => {
+    const newLang = i18n.language === "en" ? "es" : "en";
+    i18n.changeLanguage(newLang);
+  };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 p-4 relative">
+      {/* Language Toggle - Top Right */}
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        onClick={toggleLanguage}
+        className="absolute top-4 right-4 p-2 rounded-full bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors flex items-center gap-2"
+      >
+        <Languages size={20} />
+        <span className="text-sm font-medium uppercase">
+          {i18n.language === "en" ? "es" : "en"}
+        </span>
+      </motion.button>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -80,9 +68,9 @@ export default function Register() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", duration: 0.6, delay: 0.2 }}
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-500 mb-4"
+            className="inline-flex items-center justify-center w-20 h-20 mb-4"
           >
-            <Wallet className="w-8 h-8" />
+            <Logo className="w-full h-full" />
           </motion.div>
           <h1 className="text-3xl font-bold tracking-tight text-white">
             {t("auth.createAccount")}
@@ -97,14 +85,24 @@ export default function Register() {
           onSubmit={handleSubmit}
           className="space-y-6 bg-zinc-900/50 p-8 rounded-3xl border border-zinc-800/50 backdrop-blur-xl"
         >
-          <Input
-            label={t("auth.fullName")}
-            type="text"
-            placeholder="John Doe"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label={t("auth.firstName", "First Name")}
+              type="text"
+              placeholder="John"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+            />
+            <Input
+              label={t("auth.lastName", "Last Name")}
+              type="text"
+              placeholder="Doe"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+            />
+          </div>
 
           <Input
             label={t("auth.email")}
