@@ -14,6 +14,8 @@ import { useTransactions } from "../hooks/useTransactions";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { formatAccountLabel } from "../utils/accountUtils";
+import { useAuth } from "../context/AuthContext";
+import { getTodayInTimezone } from "../utils/dateUtils";
 
 export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
   const { t } = useTranslation();
@@ -21,6 +23,7 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
   const { categories } = useCategories();
   const { confirmDraft, deleteReceipt } = useReceipts();
   const { createTransaction } = useTransactions();
+  const { userInfo } = useAuth();
 
   const [transaction, setTransaction] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -69,12 +72,12 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
         description: receipt?.detectedMerchant || "",
         date: receipt?.detectedDate
           ? new Date(receipt.detectedDate).toISOString().split("T")[0]
-          : new Date().toISOString().split("T")[0],
+          : getTodayInTimezone(userInfo?.timezone),
         amount: receipt?.detectedAmount ? String(receipt.detectedAmount) : "",
         installments: "1",
       });
     }
-  }, [receipt]);
+  }, [receipt, userInfo]);
 
   if (!isOpen || !receipt) return null;
 

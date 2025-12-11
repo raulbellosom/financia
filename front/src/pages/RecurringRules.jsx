@@ -5,6 +5,7 @@ import { useAccounts } from "../hooks/useAccounts";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
+import { DatePicker } from "../components/ui/DatePicker";
 import PageLayout from "../components/PageLayout";
 import AnimatedModal from "../components/AnimatedModal";
 import DeleteConfirmationModal from "../components/ui/DeleteConfirmationModal";
@@ -20,12 +21,15 @@ import {
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { useDateFormatter } from "../hooks/useDateFormatter";
+import { useAuth } from "../context/AuthContext";
+import { getTodayInTimezone } from "../utils/dateUtils";
 
 export default function RecurringRules() {
   const { rules, isLoading, createRule, updateRule, deleteRule, isDeleting } =
     useRecurringRules();
   const { categories } = useCategories();
   const { accounts } = useAccounts();
+  const { userInfo } = useAuth();
   const { t, i18n } = useTranslation();
   const { formatDate } = useDateFormatter();
 
@@ -44,7 +48,7 @@ export default function RecurringRules() {
     interval: 1,
     category: "",
     account: "",
-    nextRun: new Date().toISOString().split("T")[0],
+    nextRun: getTodayInTimezone(userInfo?.timezone),
     autoConfirm: true,
   };
 
@@ -296,16 +300,13 @@ export default function RecurringRules() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
+            <DatePicker
               label={t("recurring.nextRun")}
-              type="date"
-              name="nextRun"
               value={formData.nextRun}
               onChange={(e) =>
                 setFormData({ ...formData, nextRun: e.target.value })
               }
               required
-              lang={i18n.language}
             />
             <div className="flex items-end pb-3">
               <label className="flex items-center gap-2 cursor-pointer select-none">

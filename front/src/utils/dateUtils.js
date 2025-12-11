@@ -195,3 +195,35 @@ export const isDateInRange = (date, startDate, endDate) => {
   const end = new Date(endDate);
   return d >= start && d <= end;
 };
+
+/**
+ * Get the current date (YYYY-MM-DD) in a specific timezone
+ * @param {string} timezone - Timezone string (e.g., 'America/Mexico_City')
+ * @returns {string} Date string in YYYY-MM-DD format
+ */
+export const getTodayInTimezone = (timezone) => {
+  try {
+    // If timezone is provided, use it. Otherwise, use system timezone.
+    const options = {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    };
+
+    if (timezone) {
+      options.timeZone = timezone;
+    }
+
+    // en-CA locale uses YYYY-MM-DD format
+    const formatter = new Intl.DateTimeFormat("en-CA", options);
+    return formatter.format(new Date());
+  } catch (e) {
+    console.warn("Error formatting date with timezone:", timezone, e);
+    // Fallback to local time YYYY-MM-DD
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+};

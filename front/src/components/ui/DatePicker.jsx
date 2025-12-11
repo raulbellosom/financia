@@ -71,7 +71,7 @@ export function DatePicker({
         <input
           ref={inputRef}
           type="date"
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-0 pointer-events-none"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
           value={value}
           onChange={onChange}
           tabIndex={-1}

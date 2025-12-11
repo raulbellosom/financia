@@ -7,14 +7,17 @@ import { DatePicker } from "./ui/DatePicker";
 import { useTransactions } from "../hooks/useTransactions";
 import { useAccounts } from "../hooks/useAccounts";
 import { useCategories } from "../hooks/useCategories";
+import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { formatAccountLabel } from "../utils/accountUtils";
+import { getTodayInTimezone } from "../utils/dateUtils";
 
 export default function TransactionModal({ isOpen, onClose, initialDate }) {
   const { createTransaction, isCreating } = useTransactions();
   const { accounts } = useAccounts();
   const { categories } = useCategories();
+  const { userInfo } = useAuth();
   const { t } = useTranslation();
 
   const getInitialDate = () => {
@@ -22,7 +25,7 @@ export default function TransactionModal({ isOpen, onClose, initialDate }) {
       const date = new Date(initialDate);
       return date.toISOString().split("T")[0];
     }
-    return new Date().toISOString().split("T")[0];
+    return getTodayInTimezone(userInfo?.timezone);
   };
 
   const [formData, setFormData] = useState({
