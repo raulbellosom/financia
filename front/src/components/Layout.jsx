@@ -36,6 +36,8 @@ export default function Layout({ children }) {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const queryClient = useQueryClient();
 
   // Process recurring rules
@@ -56,28 +58,77 @@ export default function Layout({ children }) {
 
   // PWA Install Prompt
   useEffect(() => {
-    const handler = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      // Show prompt occasionally or based on some logic
-      // For now, show it if it hasn't been dismissed recently
+    // Check if standalone
+    const isStandaloneMode =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
+    setIsStandalone(isStandaloneMode);
+
+    // Check if iOS
+    const isIOSDevice =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    setIsIOS(isIOSDevice);
+
+    const checkShowPrompt = () => {
+      if (isStandaloneMode) return;
+
       const hasDismissed = localStorage.getItem("pwa-prompt-dismissed");
-      if (!hasDismissed) {
+      const lastDismissed = hasDismissed ? parseInt(hasDismissed) : 0;
+      const now = Date.now();
+
+      // Show if never dismissed or dismissed more than 7 days ago
+      if (!hasDismissed || now - lastDismissed > 7 * 24 * 60 * 60 * 1000) {
         setShowInstallPrompt(true);
       }
     };
 
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      checkShowPrompt();
+    };
+
     window.addEventListener("beforeinstallprompt", handler);
+
+    // For iOS, check immediately since there's no event
+    if (isIOSDevice && !isStandaloneMode) {
+      checkShowPrompt();
+    }
 
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === "accepted") {
-      setDeferredPrompt(null);
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        setDeferredPrompt(null);
+        setShowInstallPrompt(false);
+      }
+    } else if (isIOS) {
+      toast(
+        (t) => (
+          <div className="flex flex-col gap-2">
+            <span className="font-bold">Instalar en iPhone/iPad</span>
+            <span className="text-sm">
+              1. Pulsa el botón Compartir{" "}
+              <span className="inline-block px-1 bg-zinc-800 rounded">⎋</span>
+            </span>
+            <span className="text-sm">
+              2. Selecciona "Agregar a Inicio"{" "}
+              <span className="inline-block px-1 bg-zinc-800 rounded">+</span>
+            </span>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="mt-2 px-3 py-1 bg-emerald-500 text-white text-xs rounded-lg self-start"
+            >
+              Entendido
+            </button>
+          </div>
+        ),
+        { duration: 8000, position: "bottom-center" }
+      );
       setShowInstallPrompt(false);
     }
   };
@@ -529,7 +580,7 @@ export default function Layout({ children }) {
                       </span>
                     </button>
 
-                    {deferredPrompt && (
+                    {(deferredPrompt || (isIOS && !isStandalone)) && (
                       <button
                         onClick={handleInstallClick}
                         className="w-full flex items-center gap-4 p-4 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors"
