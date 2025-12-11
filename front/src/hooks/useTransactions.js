@@ -38,6 +38,7 @@ export const useTransactions = (limit = 100) => {
           profile: userInfo.$id,
           isDraft: false,
           origin: "manual",
+          installments: 1,
           ...newTransaction,
           isPending: false,
           isTransferLeg: false,

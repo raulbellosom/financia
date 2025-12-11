@@ -45,6 +45,7 @@ export const useYieldProcessor = () => {
               account: account.$id,
               origin: TRANSACTION_ORIGINS.YIELD,
               isPending: false,
+              installments: 1,
               // category: null // Assuming category is optional for system generated transactions
             });
 
