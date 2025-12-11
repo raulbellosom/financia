@@ -44,18 +44,17 @@ def preprocess_image(image):
         new_height = int(height * ratio)
         img = img.resize((1500, new_height), Image.Resampling.LANCZOS)
     
-    # Increase contrast moderately (was 2.5, now 1.5 to avoid washing out details)
+    # Apply slight blur to reduce noise (good for dot matrix)
+    # MedianFilter is effective for removing salt-and-pepper noise common in scanned receipts
+    img = img.filter(ImageFilter.MedianFilter(size=3))
+    
+    # Increase contrast
     enhancer = ImageEnhance.Contrast(img)
-    img = enhancer.enhance(1.5)
+    img = enhancer.enhance(2.0)
     
-    # Increase sharpness moderately (was 2.0, now 1.5)
+    # Increase sharpness
     enhancer = ImageEnhance.Sharpness(img)
-    img = enhancer.enhance(1.5)
-    
-    # REMOVED: Manual binary thresholding.
-    # The previous logic using np.mean() was too aggressive for receipts with dark backgrounds,
-    # causing the text to be lost or noise to be amplified.
-    # Tesseract handles binarization internally (Otsu's method) which is usually better.
+    img = enhancer.enhance(2.0)
     
     return img
 
@@ -70,11 +69,16 @@ def extract_amount(text):
     
     # Clean text to improve matching (remove excessive whitespace)
     text_cleaned = re.sub(r'\s+', ' ', text)
+    # Replace common OCR errors for currency symbols
+    text_cleaned = text_cleaned.replace('S$', '$').replace('s$', '$')
     
     # Patterns to match common receipt amount formats
     # Priority order: most specific to least specific
     # Made more flexible to handle OCR errors
     patterns = [
+        # Total with MX/MXN prefix (e.g. Total MX$ 123.45) - Uber style
+        (r'(?:total|tota[l1!|])[:\s]+(?:mxn|mx)\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', 'total_mx'),
+        
         # Total Contado with flexible spacing (handles "Total Cc ., e ontado")
         # Matches: Total Contado, Total C ontado, Total Cc ontado, etc.
         (r'total[\s.,;:]*c+[\s.,;:]*[oe0]*[\s.,;:]*[no]*[\s.,;:]*t+[\s.,;:]*a+[\s.,;:]*d+[\s.,;:]*o+[:\s]*\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', 'total_contado_fuzzy'),
@@ -98,6 +102,8 @@ def extract_amount(text):
         (r'total\s+a\s+pagar[:\s]+\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', 'total_a_pagar'),
         # Total: $ 123.45 or Total $ 123.45
         (r'(?:total|tota[l1!|])[:\s]+\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', 'total'),
+        # Amount with currency prefix alone (e.g. MX$ 123.45)
+        (r'(?:mxn|mx)\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', 'currency_prefix'),
         # Neto $ 77.60 or Net $ 123.45
         (r'(?:neto|net)[:\s]+\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', 'neto'),
         # Importe: $123.45 (Spanish)

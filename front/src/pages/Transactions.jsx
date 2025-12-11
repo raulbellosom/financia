@@ -15,13 +15,18 @@ import PeriodSelector from "../components/PeriodSelector";
 import TransactionFilters from "../components/TransactionFilters";
 import SummaryCards from "../components/SummaryCards";
 import { useTransactionReports } from "../hooks/useTransactionReports";
+import { useCategories } from "../hooks/useCategories";
+import { useAccounts } from "../hooks/useAccounts";
 import { useTranslation } from "react-i18next";
 import { useDateFormatter } from "../hooks/useDateFormatter";
 import { getQuickPeriods, groupTransactionsByDate } from "../utils/dateUtils";
+import { calculateInstallmentStatus } from "../utils/msiUtils";
 
 export default function Transactions() {
   const { t } = useTranslation();
   const { formatDate } = useDateFormatter();
+  const { categories } = useCategories();
+  const { accounts } = useAccounts();
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -186,7 +191,7 @@ export default function Transactions() {
                     }}
                     className="flex items-center justify-between p-4 border-b border-zinc-800 last:border-0 hover:bg-zinc-800/50 transition-colors cursor-pointer"
                   >
-                    <div className="flex items-center gap-4 flex-1">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                           tx.type === "income"
@@ -206,7 +211,7 @@ export default function Transactions() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-medium text-white">
+                          <p className="font-medium text-white truncate max-w-full">
                             {tx.description || t("common.untitled")}
                           </p>
                           {tx.isDraft && (
@@ -221,28 +226,66 @@ export default function Transactions() {
                             {tx.notes}
                           </p>
                         )}
-                        <p className="text-sm text-zinc-500">
-                          {tx.category?.name ||
-                            (tx.category && typeof tx.category === "object"
-                              ? tx.category.name
-                              : t("common.uncategorized"))}
+                        <p className="text-sm text-zinc-500 truncate">
+                          {(() => {
+                            if (!tx.category) return t("common.uncategorized");
+                            if (typeof tx.category === "object")
+                              return tx.category.name;
+                            const cat = categories.find(
+                              (c) => c.$id === tx.category
+                            );
+                            return cat ? cat.name : t("common.uncategorized");
+                          })()}
                         </p>
                       </div>
                     </div>
-                    <span
-                      className={`font-bold text-lg ml-4 shrink-0 ${
-                        tx.type === "income"
-                          ? "text-blue-500"
-                          : tx.type === "expense"
-                          ? "text-white"
-                          : "text-zinc-400"
-                      }`}
-                    >
-                      {tx.type === "income" ? "+" : "-"}$
-                      {tx.amount.toLocaleString("es-MX", {
-                        minimumFractionDigits: 2,
-                      })}
-                    </span>
+                    <div className="text-right ml-4 shrink-0">
+                      <span
+                        className={`font-bold text-lg ${
+                          tx.type === "income"
+                            ? "text-blue-500"
+                            : tx.type === "expense"
+                            ? "text-white"
+                            : "text-zinc-400"
+                        }`}
+                      >
+                        {tx.type === "income" ? "+" : "-"}$
+                        {tx.amount.toLocaleString("es-MX", {
+                          minimumFractionDigits: 2,
+                        })}
+                      </span>
+                      {/* MSI Status Display */}
+                      {(() => {
+                        const account = accounts.find(
+                          (a) => a.$id === (tx.account?.$id || tx.account)
+                        );
+                        if (!account) return null;
+
+                        const msiStatus = calculateInstallmentStatus(
+                          tx,
+                          account
+                        );
+                        if (msiStatus) {
+                          return (
+                            <div className="flex flex-col items-end mt-1">
+                              <span className="text-xs text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
+                                {msiStatus.currentInstallment}/
+                                {msiStatus.totalInstallments} MSI
+                              </span>
+                              <span className="text-[10px] text-zinc-500 mt-0.5">
+                                $
+                                {msiStatus.monthlyAmount.toLocaleString(
+                                  "es-MX",
+                                  { minimumFractionDigits: 2 }
+                                )}{" "}
+                                / mes
+                              </span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </div>
                   </div>
                 ))}
               </div>

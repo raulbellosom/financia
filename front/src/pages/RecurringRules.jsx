@@ -222,7 +222,7 @@ export default function RecurringRules() {
             required
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label={t("common.amount")}
               type="number"
@@ -243,7 +243,7 @@ export default function RecurringRules() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select
               label={t("recurring.frequency")}
               options={frequencyOptions}
@@ -265,7 +265,7 @@ export default function RecurringRules() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label={t("recurring.nextRun")}
               type="date"
@@ -277,8 +277,8 @@ export default function RecurringRules() {
               required
               lang={i18n.language}
             />
-            <div className="flex items-center h-full pt-6">
-              <label className="flex items-center gap-2 cursor-pointer">
+            <div className="flex items-end pb-3">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={formData.autoConfirm}
@@ -294,50 +294,35 @@ export default function RecurringRules() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-zinc-400 mb-2 block">
-                {t("nav.categories")}
-              </label>
-              <select
-                className="w-full h-11 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 text-sm text-zinc-100 focus:border-emerald-500 focus:outline-none"
-                value={formData.category}
-                onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value })
-                }
-                required
-              >
-                <option value="">{t("common.select")}</option>
-                {categories
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Select
+              label={t("nav.categories")}
+              value={formData.category}
+              onChange={(e) =>
+                setFormData({ ...formData, category: e.target.value })
+              }
+              options={[
+                { value: "", label: t("common.select") },
+                ...categories
                   .filter((c) => c.type === formData.type)
-                  .map((cat) => (
-                    <option key={cat.$id} value={cat.$id}>
-                      {cat.name}
-                    </option>
-                  ))}
-              </select>
-            </div>
+                  .map((cat) => ({ value: cat.$id, label: cat.name })),
+              ]}
+            />
 
-            <div>
-              <label className="text-sm font-medium text-zinc-400 mb-2 block">
-                {t("nav.accounts")}
-              </label>
-              <select
-                className="w-full h-11 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 text-sm text-zinc-100 focus:border-emerald-500 focus:outline-none"
-                value={formData.account}
-                onChange={(e) =>
-                  setFormData({ ...formData, account: e.target.value })
-                }
-                required
-              >
-                <option value="">{t("common.select")}</option>
-                {accounts.map((acc) => (
-                  <option key={acc.$id} value={acc.$id}>
-                    {acc.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label={t("nav.accounts")}
+              value={formData.account}
+              onChange={(e) =>
+                setFormData({ ...formData, account: e.target.value })
+              }
+              options={[
+                { value: "", label: t("common.select") },
+                ...accounts.map((acc) => ({
+                  value: acc.$id,
+                  label: acc.name,
+                })),
+              ]}
+            />
           </div>
 
           <div className="flex justify-end gap-3 mt-6">

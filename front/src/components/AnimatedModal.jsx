@@ -30,11 +30,11 @@ export default function AnimatedModal({
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", duration: 0.5 }}
               className={clsx(
-                "bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-md p-6 relative pointer-events-auto shadow-2xl shadow-black/50",
+                "bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-md relative pointer-events-auto shadow-2xl shadow-black/50 flex flex-col max-h-[90vh] overflow-hidden",
                 className
               )}
             >
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between p-6 pb-0 shrink-0">
                 <h2 className="text-xl font-bold text-white">{title}</h2>
                 <button
                   onClick={onClose}
@@ -44,7 +44,9 @@ export default function AnimatedModal({
                 </button>
               </div>
 
-              {children}
+              <div className="p-6 overflow-y-auto custom-scrollbar">
+                {children}
+              </div>
             </motion.div>
           </div>
         </>

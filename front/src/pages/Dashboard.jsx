@@ -164,9 +164,9 @@ export default function Dashboard() {
                 }}
                 className="flex items-center justify-between p-4 border-b border-zinc-800/50 last:border-0 hover:bg-zinc-800/30 transition-colors cursor-pointer"
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                       tx.type === "income"
                         ? "bg-blue-500/10 text-blue-500"
                         : tx.type === "expense"
@@ -182,17 +182,17 @@ export default function Dashboard() {
                       <ArrowRightLeft size={20} />
                     )}
                   </div>
-                  <div>
-                    <p className="font-medium text-white">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-white truncate">
                       {tx.description || t("common.untitled")}
                     </p>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-zinc-500 truncate">
                       {formatDate(tx.date)}
                     </p>
                   </div>
                 </div>
                 <span
-                  className={`font-bold ${
+                  className={`font-bold ml-4 shrink-0 ${
                     tx.type === "income"
                       ? "text-blue-500"
                       : tx.type === "expense"

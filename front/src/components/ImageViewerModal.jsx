@@ -8,7 +8,7 @@ import {
   Loader2,
   Maximize2,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { storage } from "../lib/appwrite";
 import { APPWRITE_CONFIG } from "../lib/constants";
 import clsx from "clsx";
@@ -25,6 +25,46 @@ export default function ImageViewerModal({
   const [imageUrl, setImageUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isTweaking, setIsTweaking] = useState(false);
+
+  const containerRef = useRef(null);
+  const [touchStartDist, setTouchStartDist] = useState(null);
+
+  // Handle Wheel Zoom
+  const handleWheel = (e) => {
+    e.stopPropagation();
+    const delta = -e.deltaY * 0.001;
+    setScale((s) => Math.min(5, Math.max(0.1, s + delta)));
+    setIsTweaking(true);
+  };
+
+  // Handle Pinch Zoom
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      setTouchStartDist(dist);
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 2 && touchStartDist) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const delta = dist - touchStartDist;
+
+      setScale((s) => Math.min(5, Math.max(0.1, s + delta * 0.01)));
+      setTouchStartDist(dist);
+      setIsTweaking(true);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setTouchStartDist(null);
+  };
 
   // Determine URLs
   useEffect(() => {
@@ -162,11 +202,16 @@ export default function ImageViewerModal({
 
           {/* Image Layer */}
           <motion.div
-            className="relative z-10 w-full h-full flex items-center justify-center p-8 pointer-events-auto"
+            ref={containerRef}
+            className="relative z-10 w-full h-full flex items-center justify-center p-8 pointer-events-auto touch-none"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
+            onWheel={handleWheel}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
             {loading && (
               <div className="absolute inset-0 flex items-center justify-center text-white/50">
@@ -182,12 +227,8 @@ export default function ImageViewerModal({
                 animate={{ scale, rotate: rotation }}
                 transition={{ type: "spring", stiffness: 200, damping: 20 }}
                 drag
-                dragConstraints={{
-                  left: -500,
-                  right: 500,
-                  top: -500,
-                  bottom: 500,
-                }}
+                dragConstraints={containerRef}
+                dragElastic={0.1}
                 className={clsx(
                   "max-w-full max-h-full object-contain cursor-grab active:cursor-grabbing shadow-2xl shadow-black/50 rounded-lg",
                   loading ? "opacity-0" : "opacity-100"

@@ -41,6 +41,7 @@ export const useRuleProcessor = () => {
             category: rule.category?.$id || rule.category,
             account: rule.account?.$id || rule.account,
             origin: "recurring",
+            installments: 1,
           });
 
           // 2. Calculate Next Run

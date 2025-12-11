@@ -323,6 +323,8 @@
       "amount": "Monto",
       "description": "Descripción",
       "descPlaceholder": "¿Para qué es esto?",
+      "category": "Categoría",
+      "selectCategory": "Seleccionar categoría",
       "date": "Fecha",
       "account": "Cuenta",
       "selectAccount": "Selecciona una cuenta",

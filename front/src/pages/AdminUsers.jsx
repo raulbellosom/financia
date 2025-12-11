@@ -21,6 +21,7 @@ export default function AdminUsers() {
   const { userInfo } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const { t } = useTranslation();
 
   // Modals state
@@ -345,6 +346,8 @@ export default function AdminUsers() {
             <input
               type="text"
               placeholder={t("admin.searchPlaceholder")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
@@ -383,73 +386,83 @@ export default function AdminUsers() {
                   </td>
                 </tr>
               ) : (
-                users.map((user) => (
-                  <tr
-                    key={user.$id}
-                    className="hover:bg-zinc-800/50 transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-white font-medium overflow-hidden">
-                          {user.avatarUrl ? (
-                            <img
-                              src={user.avatarUrl}
-                              alt={user.displayName}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : user.displayName ? (
-                            user.displayName.charAt(0).toUpperCase()
-                          ) : (
-                            "U"
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-medium text-white">
-                            {user.displayName}
+                users
+                  .filter(
+                    (user) =>
+                      user.displayName
+                        ?.toLowerCase()
+                        .includes(searchQuery.toLowerCase()) ||
+                      user.email
+                        ?.toLowerCase()
+                        .includes(searchQuery.toLowerCase())
+                  )
+                  .map((user) => (
+                    <tr
+                      key={user.$id}
+                      className="hover:bg-zinc-800/50 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-white font-medium overflow-hidden">
+                            {user.avatarUrl ? (
+                              <img
+                                src={user.avatarUrl}
+                                alt={user.displayName}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : user.displayName ? (
+                              user.displayName.charAt(0).toUpperCase()
+                            ) : (
+                              "U"
+                            )}
                           </div>
-                          <div className="text-xs">{user.email}</div>
+                          <div>
+                            <div className="font-medium text-white">
+                              {user.displayName}
+                            </div>
+                            <div className="text-xs">{user.email}</div>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.displayRole === "admin"
-                            ? "bg-purple-500/10 text-purple-500"
-                            : "bg-zinc-800 text-zinc-400"
-                        }`}
-                      >
-                        {user.displayRole.charAt(0).toUpperCase() +
-                          user.displayRole.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center gap-1.5 ${
-                          user.status ? "text-emerald-500" : "text-red-500"
-                        }`}
-                      >
+                      </td>
+                      <td className="px-6 py-4">
                         <span
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            user.status ? "bg-emerald-500" : "bg-red-500"
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            user.displayRole === "admin"
+                              ? "bg-purple-500/10 text-purple-500"
+                              : "bg-zinc-800 text-zinc-400"
                           }`}
-                        ></span>
-                        {user.status ? t("admin.active") : t("admin.blocked")}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      {new Date(user.$createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => openEditModal(user)}
-                        className="text-zinc-500 hover:text-white transition-colors p-2 hover:bg-zinc-800 rounded-lg"
-                      >
-                        <MoreVertical size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                        >
+                          {user.displayRole.charAt(0).toUpperCase() +
+                            user.displayRole.slice(1)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex items-center gap-1.5 ${
+                            user.status ? "text-emerald-500" : "text-red-500"
+                          }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              user.status ? "bg-emerald-500" : "bg-red-500"
+                            }`}
+                          ></span>
+                          {user.status ? t("admin.active") : t("admin.blocked")}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {new Date(user.$createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => openEditModal(user)}
+                          className="text-zinc-500 hover:text-white transition-colors p-2 hover:bg-zinc-800 rounded-lg"
+                        >
+                          <MoreVertical size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
               )}
             </tbody>
           </table>

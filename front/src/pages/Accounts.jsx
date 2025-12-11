@@ -351,8 +351,8 @@ export default function Accounts() {
       {/* Account Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-zinc-900 w-full max-w-md rounded-3xl border border-zinc-800 p-6 space-y-6 max-h-[90dvh] overflow-y-auto">
-            <div className="flex items-center justify-between">
+          <div className="bg-zinc-900 w-full max-w-md rounded-3xl border border-zinc-800 flex flex-col max-h-[90dvh] overflow-hidden">
+            <div className="flex items-center justify-between p-6 pb-0 shrink-0">
               <h2 className="text-xl font-bold text-white">
                 {editingId
                   ? t("accounts.editAccountTitle")
@@ -366,246 +366,252 @@ export default function Accounts() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-1">
-                  {t("accounts.nameLabel")}
-                </label>
-                <Input
-                  required
-                  placeholder={t("accounts.namePlaceholder")}
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                />
-              </div>
-
-              <div>
-                <Select
-                  label={t("accounts.typeLabel")}
-                  options={accountTypeOptions}
-                  value={formData.type}
-                  onChange={(e) =>
-                    setFormData({ ...formData, type: e.target.value })
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-1">
-                  {t("accounts.institutionLabel")}{" "}
-                  <span className="text-zinc-500 text-xs">
-                    {t("accounts.optional")}
-                  </span>
-                </label>
-                <Input
-                  placeholder="BBVA, Santander, etc."
-                  value={formData.institution}
-                  onChange={(e) =>
-                    setFormData({ ...formData, institution: e.target.value })
-                  }
-                />
-              </div>
-
-              {(formData.type === "credit" || formData.type === "debit") && (
+            <div className="p-6 overflow-y-auto custom-scrollbar">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-zinc-400 mb-1">
-                    {t("accounts.cardLast4Label")}
+                    {t("accounts.nameLabel")}
                   </label>
                   <Input
-                    maxLength={4}
-                    placeholder="1234"
-                    value={formData.cardLast4}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, "");
-                      setFormData({ ...formData, cardLast4: val });
-                    }}
+                    required
+                    placeholder={t("accounts.namePlaceholder")}
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                   />
                 </div>
-              )}
 
-              {formData.type === "credit" && (
-                <>
-                  <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Select
+                    label={t("accounts.typeLabel")}
+                    options={accountTypeOptions}
+                    value={formData.type}
+                    onChange={(e) =>
+                      setFormData({ ...formData, type: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">
+                    {t("accounts.institutionLabel")}{" "}
+                    <span className="text-zinc-500 text-xs">
+                      {t("accounts.optional")}
+                    </span>
+                  </label>
+                  <Input
+                    placeholder="BBVA, Santander, etc."
+                    value={formData.institution}
+                    onChange={(e) =>
+                      setFormData({ ...formData, institution: e.target.value })
+                    }
+                  />
+                </div>
+
+                {(formData.type === "credit" || formData.type === "debit") && (
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-1">
+                      {t("accounts.cardLast4Label")}
+                    </label>
+                    <Input
+                      maxLength={4}
+                      placeholder="1234"
+                      value={formData.cardLast4}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, "");
+                        setFormData({ ...formData, cardLast4: val });
+                      }}
+                    />
+                  </div>
+                )}
+
+                {formData.type === "credit" && (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-400 mb-1">
+                          {t("accounts.billingDayLabel")}
+                        </label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="31"
+                          placeholder="1"
+                          value={formData.billingDay}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              billingDay: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-400 mb-1">
+                          {t("accounts.dueDayLabel")}
+                        </label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="31"
+                          placeholder="15"
+                          value={formData.dueDay}
+                          onChange={(e) =>
+                            setFormData({ ...formData, dueDay: e.target.value })
+                          }
+                        />
+                      </div>
+                    </div>
+
                     <div>
                       <label className="block text-sm font-medium text-zinc-400 mb-1">
-                        {t("accounts.billingDayLabel")}
+                        {t("accounts.creditLimitLabel")}
                       </label>
                       <Input
                         type="number"
-                        min="1"
-                        max="31"
-                        placeholder="1"
-                        value={formData.billingDay}
+                        step="0.01"
+                        placeholder="0.00"
+                        value={formData.creditLimit}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            billingDay: e.target.value,
+                            creditLimit: e.target.value,
                           })
                         }
                       />
                     </div>
+                  </>
+                )}
+
+                {formData.type === "investment" && (
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-zinc-400 mb-1">
-                        {t("accounts.dueDayLabel")}
+                        {t("accounts.yieldRateLabel")}
                       </label>
                       <Input
                         type="number"
-                        min="1"
-                        max="31"
-                        placeholder="15"
-                        value={formData.dueDay}
+                        step="0.01"
+                        min="0"
+                        placeholder="10.5"
+                        value={formData.yieldRate}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          if (val < 0) return; // Prevent negative values
+                          setFormData({
+                            ...formData,
+                            yieldRate: e.target.value,
+                          });
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "-" || e.key === "e") {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <Select
+                        label={t("accounts.yieldFrequencyLabel")}
+                        options={yieldFrequencyOptions}
+                        value={formData.yieldFrequency}
                         onChange={(e) =>
-                          setFormData({ ...formData, dueDay: e.target.value })
+                          setFormData({
+                            ...formData,
+                            yieldFrequency: e.target.value,
+                          })
                         }
                       />
                     </div>
                   </div>
+                )}
 
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-1">
-                      {t("accounts.creditLimitLabel")}
-                    </label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      value={formData.creditLimit}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          creditLimit: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                </>
-              )}
-
-              {formData.type === "investment" && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">
+                      {t("accounts.colorLabel")}
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {COLORS.map((hex) => (
+                        <button
+                          key={hex}
+                          type="button"
+                          onClick={() =>
+                            setFormData({ ...formData, color: hex })
+                          }
+                          style={{ backgroundColor: hex }}
+                          className={`w-6 h-6 rounded-full transition-all ${
+                            formData.color === hex
+                              ? "ring-2 ring-white ring-offset-2 ring-offset-zinc-900 scale-110"
+                              : "hover:scale-110"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">
+                      {t("accounts.iconLabel")}
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {ICONS.map(({ id, component: Icon }) => (
+                        <button
+                          key={id}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, icon: id })}
+                          className={`p-1.5 rounded-lg transition-colors ${
+                            formData.icon === id
+                              ? "bg-zinc-700 text-white"
+                              : "text-zinc-400 hover:text-white"
+                          }`}
+                          style={
+                            formData.icon === id
+                              ? { color: formData.color }
+                              : {}
+                          }
+                        >
+                          <Icon size={20} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {!editingId && (
+                  <div>
                     <label className="block text-sm font-medium text-zinc-400 mb-1">
-                      {t("accounts.yieldRateLabel")}
+                      {t("accounts.initialBalanceLabel")}
                     </label>
                     <Input
                       type="number"
                       step="0.01"
-                      min="0"
-                      placeholder="10.5"
-                      value={formData.yieldRate}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value);
-                        if (val < 0) return; // Prevent negative values
-                        setFormData({
-                          ...formData,
-                          yieldRate: e.target.value,
-                        });
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "-" || e.key === "e") {
-                          e.preventDefault();
-                        }
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <Select
-                      label={t("accounts.yieldFrequencyLabel")}
-                      options={yieldFrequencyOptions}
-                      value={formData.yieldFrequency}
+                      required
+                      placeholder="0.00"
+                      value={formData.initialBalance}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          yieldFrequency: e.target.value,
+                          initialBalance: e.target.value,
                         })
                       }
                     />
                   </div>
-                </div>
-              )}
+                )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">
-                    {t("accounts.colorLabel")}
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {COLORS.map((hex) => (
-                      <button
-                        key={hex}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, color: hex })}
-                        style={{ backgroundColor: hex }}
-                        className={`w-6 h-6 rounded-full transition-all ${
-                          formData.color === hex
-                            ? "ring-2 ring-white ring-offset-2 ring-offset-zinc-900 scale-110"
-                            : "hover:scale-110"
-                        }`}
-                      />
-                    ))}
-                  </div>
+                <div className="pt-2">
+                  <Button
+                    type="submit"
+                    className="w-full text-zinc-950 font-bold hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: formData.color }}
+                  >
+                    {editingId
+                      ? t("accounts.updateButton")
+                      : t("accounts.createButton")}
+                  </Button>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">
-                    {t("accounts.iconLabel")}
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {ICONS.map(({ id, component: Icon }) => (
-                      <button
-                        key={id}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, icon: id })}
-                        className={`p-1.5 rounded-lg transition-colors ${
-                          formData.icon === id
-                            ? "bg-zinc-700 text-white"
-                            : "text-zinc-400 hover:text-white"
-                        }`}
-                        style={
-                          formData.icon === id ? { color: formData.color } : {}
-                        }
-                      >
-                        <Icon size={20} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {!editingId && (
-                <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-1">
-                    {t("accounts.initialBalanceLabel")}
-                  </label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    required
-                    placeholder="0.00"
-                    value={formData.initialBalance}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        initialBalance: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              )}
-
-              <div className="pt-2">
-                <Button
-                  type="submit"
-                  className="w-full text-zinc-950 font-bold hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: formData.color }}
-                >
-                  {editingId
-                    ? t("accounts.updateButton")
-                    : t("accounts.createButton")}
-                </Button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
       )}
