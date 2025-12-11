@@ -14,6 +14,7 @@ export default function Register() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -21,6 +22,12 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (password !== confirmPassword) {
+      toast.error(t("auth.passwordsDoNotMatch", "Passwords do not match"));
+      return;
+    }
+
     setLoading(true);
     const result = await register(email, password, firstName, lastName);
     setLoading(false);
@@ -119,6 +126,15 @@ export default function Register() {
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+
+          <Input
+            label={t("auth.confirmPassword", "Confirm Password")}
+            type="password"
+            placeholder="••••••••"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
 
