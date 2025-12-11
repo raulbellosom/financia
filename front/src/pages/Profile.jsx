@@ -70,6 +70,16 @@ export default function Profile() {
 
   useEffect(() => {
     if (userInfo) {
+      let tzValue = userInfo.timezone || "";
+
+      // Map the user's timezone (IANA) to the representative value in our list
+      if (timezones.length > 0 && tzValue) {
+        const found = timezones.find((t) => t.utc && t.utc.includes(tzValue));
+        if (found && found.utc && found.utc.length > 0) {
+          tzValue = found.utc[0];
+        }
+      }
+
       setFormData((prev) => ({
         ...prev,
         username: userInfo.username || "",
@@ -79,7 +89,7 @@ export default function Profile() {
         state: userInfo.state || "",
         defaultCurrency: userInfo.defaultCurrency || "MXN",
         language: userInfo.language || "es-MX",
-        timezone: userInfo.timezone || "",
+        timezone: tzValue,
         avatarFileId: userInfo.avatarFileId || "",
       }));
 
@@ -92,7 +102,7 @@ export default function Profile() {
         setAvatarUrl(url);
       }
     }
-  }, [userInfo]);
+  }, [userInfo, timezones]);
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -397,7 +407,10 @@ export default function Profile() {
               >
                 <option value="">{t("profile.selectTimezone")}</option>
                 {timezones.map((tz, index) => (
-                  <option key={index} value={tz.value}>
+                  <option
+                    key={index}
+                    value={tz.utc && tz.utc.length > 0 ? tz.utc[0] : tz.value}
+                  >
                     {tz.text}
                   </option>
                 ))}

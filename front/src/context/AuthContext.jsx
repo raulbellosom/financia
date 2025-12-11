@@ -41,7 +41,31 @@ export const AuthProvider = ({ children }) => {
         [Query.equal("authUserId", user.$id)]
       );
       if (response.documents.length > 0) {
-        return response.documents[0];
+        const doc = response.documents[0];
+        // Fix invalid timezone if present (e.g. "Central Standard Time (Mexico)")
+        // We want IANA format like "America/Mexico_City"
+        if (
+          doc.timezone &&
+          (doc.timezone.includes("Standard Time") ||
+            doc.timezone.includes("Daylight Time"))
+        ) {
+          try {
+            const correctTimezone =
+              Intl.DateTimeFormat().resolvedOptions().timeZone;
+            if (correctTimezone !== doc.timezone) {
+              await databases.updateDocument(
+                APPWRITE_CONFIG.DATABASE_ID,
+                APPWRITE_CONFIG.USERS_INFO_COLLECTION_ID,
+                doc.$id,
+                { timezone: correctTimezone }
+              );
+              doc.timezone = correctTimezone;
+            }
+          } catch (e) {
+            console.warn("Could not auto-fix timezone", e);
+          }
+        }
+        return doc;
       }
       return null;
     },
@@ -167,6 +191,9 @@ export const AuthProvider = ({ children }) => {
 
       // Create users_info document immediately
       try {
+        // Get user timezone
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
         await databases.createDocument(
           APPWRITE_CONFIG.DATABASE_ID,
           APPWRITE_CONFIG.USERS_INFO_COLLECTION_ID,
@@ -182,6 +209,7 @@ export const AuthProvider = ({ children }) => {
             verified_phone: false,
             firstName: firstName,
             lastName: lastName,
+            timezone: timezone, // Save IANA timezone (e.g., "America/Mexico_City")
           }
         );
       } catch (dbError) {
