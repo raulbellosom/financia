@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { YIELD_CALCULATION_BASE } from "../lib/constants";
 
 const ICONS = [
   { id: "wallet", component: Wallet },
@@ -94,6 +95,8 @@ export default function Accounts() {
     creditLimit: "",
     yieldRate: "",
     yieldFrequency: "annual",
+    yieldCalculationBase: "total",
+    yieldFixedAmount: "",
     color: "#10b981",
     icon: "wallet",
   };
@@ -120,6 +123,8 @@ export default function Accounts() {
       creditLimit: account.creditLimit || "",
       yieldRate: account.yieldRate || "",
       yieldFrequency: account.yieldFrequency || "annual",
+      yieldCalculationBase: account.yieldCalculationBase || "total",
+      yieldFixedAmount: account.yieldFixedAmount || "",
       color: account.color || "#10b981",
       icon: account.icon || "wallet",
     });
@@ -161,19 +166,39 @@ export default function Accounts() {
         payload.initialBalance = parseFloat(formData.initialBalance) || 0;
       }
 
+      // Handle Credit/Debit specific fields
       if (formData.type === "credit" || formData.type === "debit") {
         payload.cardLast4 = formData.cardLast4;
+      } else {
+        payload.cardLast4 = null;
       }
 
+      // Handle Credit specific fields
       if (formData.type === "credit") {
         payload.billingDay = parseInt(formData.billingDay) || null;
         payload.dueDay = parseInt(formData.dueDay) || null;
         payload.creditLimit = parseFloat(formData.creditLimit) || 0;
+      } else {
+        payload.billingDay = null;
+        payload.dueDay = null;
+        payload.creditLimit = null;
       }
 
+      // Handle Investment specific fields
       if (formData.type === "investment") {
         payload.yieldRate = parseFloat(formData.yieldRate) || 0;
         payload.yieldFrequency = formData.yieldFrequency;
+        payload.yieldCalculationBase = formData.yieldCalculationBase;
+        if (formData.yieldCalculationBase === "fixed") {
+          payload.yieldFixedAmount = parseFloat(formData.yieldFixedAmount) || 0;
+        } else {
+          payload.yieldFixedAmount = null;
+        }
+      } else {
+        payload.yieldRate = null;
+        payload.yieldFrequency = null;
+        payload.yieldCalculationBase = null;
+        payload.yieldFixedAmount = null;
       }
 
       if (editingId) {
@@ -215,6 +240,17 @@ export default function Accounts() {
     { value: "annual", label: t("accounts.frequencies.annual") },
     { value: "monthly", label: t("accounts.frequencies.monthly") },
     { value: "daily", label: t("accounts.frequencies.daily") },
+  ];
+
+  const yieldCalculationBaseOptions = [
+    {
+      value: YIELD_CALCULATION_BASE.TOTAL,
+      label: t("accounts.yieldBase.total"),
+    },
+    {
+      value: YIELD_CALCULATION_BASE.FIXED,
+      label: t("accounts.yieldBase.fixed"),
+    },
   ];
 
   return (
@@ -485,44 +521,85 @@ export default function Accounts() {
                 )}
 
                 {formData.type === "investment" && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-zinc-400 mb-1">
-                        {t("accounts.yieldRateLabel")}
-                      </label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="10.5"
-                        value={formData.yieldRate}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value);
-                          if (val < 0) return; // Prevent negative values
-                          setFormData({
-                            ...formData,
-                            yieldRate: e.target.value,
-                          });
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "-" || e.key === "e") {
-                            e.preventDefault();
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-400 mb-1">
+                          {t("accounts.yieldRateLabel")}
+                        </label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="10.5"
+                          value={formData.yieldRate}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            if (val < 0) return; // Prevent negative values
+                            setFormData({
+                              ...formData,
+                              yieldRate: e.target.value,
+                            });
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "-" || e.key === "e") {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <Select
+                          label={t("accounts.yieldFrequencyLabel")}
+                          options={yieldFrequencyOptions}
+                          value={formData.yieldFrequency}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              yieldFrequency: e.target.value,
+                            })
                           }
-                        }}
-                      />
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <Select
-                        label={t("accounts.yieldFrequencyLabel")}
-                        options={yieldFrequencyOptions}
-                        value={formData.yieldFrequency}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            yieldFrequency: e.target.value,
-                          })
-                        }
-                      />
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Select
+                          label={t("accounts.yieldBaseLabel")}
+                          options={yieldCalculationBaseOptions}
+                          value={formData.yieldCalculationBase}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              yieldCalculationBase: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      {formData.yieldCalculationBase ===
+                        YIELD_CALCULATION_BASE.FIXED && (
+                        <div>
+                          <label className="block text-sm font-medium text-zinc-400 mb-1">
+                            {t("accounts.yieldFixedAmountLabel")}
+                          </label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            placeholder="1000.00"
+                            value={formData.yieldFixedAmount}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value);
+                              if (val < 0) return;
+                              setFormData({
+                                ...formData,
+                                yieldFixedAmount: e.target.value,
+                              });
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

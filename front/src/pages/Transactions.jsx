@@ -306,6 +306,7 @@ export default function Transactions() {
           setSelectedDetailsTransaction(null);
         }}
         transaction={selectedDetailsTransaction}
+        allowDateEdit={true}
       />
     </PageLayout>
   );

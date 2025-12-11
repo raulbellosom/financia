@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, Link } from "react-router-dom";
 import Logo from "./Logo";
 import { useRuleProcessor } from "../hooks/useRuleProcessor";
+import { useYieldProcessor } from "../hooks/useYieldProcessor";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -42,6 +43,8 @@ export default function Layout({ children }) {
 
   // Process recurring rules
   useRuleProcessor();
+  // Process investment yields
+  useYieldProcessor();
 
   useEffect(() => {
     const handleScroll = () => {

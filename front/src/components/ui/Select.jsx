@@ -32,7 +32,7 @@ export function Select({
   const buttonStyles =
     variant === "ghost"
       ? "w-full bg-transparent border-none p-0 text-left text-white focus:outline-none transition-all flex items-center justify-between"
-      : "w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-left text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all flex items-center justify-between";
+      : "w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-2.5 text-left text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all flex items-center justify-between h-11";
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>

@@ -26,6 +26,7 @@ export default function TransactionDetailsModal({
   transaction,
   account,
   readOnly = false,
+  allowDateEdit = false,
 }) {
   const { t } = useTranslation();
   const { formatDate } = useDateFormatter();
@@ -34,6 +35,7 @@ export default function TransactionDetailsModal({
 
   const [note, setNote] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [date, setDate] = useState("");
   const [recurringCount, setRecurringCount] = useState(null);
   const [recurringHistory, setRecurringHistory] = useState([]);
   const [nextPaymentDate, setNextPaymentDate] = useState(null);
@@ -42,6 +44,11 @@ export default function TransactionDetailsModal({
   useEffect(() => {
     if (transaction) {
       setNote(transaction.notes || "");
+      setDate(
+        transaction.date
+          ? new Date(transaction.date).toISOString().split("T")[0]
+          : ""
+      );
 
       // Handle category being an object or an ID string
       const cat = transaction.category;
@@ -103,14 +110,39 @@ export default function TransactionDetailsModal({
     }
   };
 
+  const isCreatedToday = () => {
+    if (!transaction?.$createdAt) return false;
+    const created = new Date(transaction.$createdAt);
+    const today = new Date();
+    return (
+      created.getDate() === today.getDate() &&
+      created.getMonth() === today.getMonth() &&
+      created.getFullYear() === today.getFullYear()
+    );
+  };
+
+  const canEditDate = allowDateEdit && isCreatedToday() && !readOnly;
+
   const handleSave = async () => {
     try {
+      const updates = {
+        notes: note,
+        category: categoryId || null,
+      };
+
+      if (canEditDate && date) {
+        const originalDate = new Date(transaction.date);
+        const [year, month, day] = date.split("-").map(Number);
+        const newDate = new Date(originalDate);
+        newDate.setFullYear(year);
+        newDate.setMonth(month - 1);
+        newDate.setDate(day);
+        updates.date = newDate.toISOString();
+      }
+
       await updateTransaction({
         id: transaction.$id,
-        updates: {
-          notes: note,
-          category: categoryId || null,
-        },
+        updates,
       });
       toast.success(t("common.saved"));
       onClose();
@@ -170,9 +202,18 @@ export default function TransactionDetailsModal({
                 <Calendar size={14} />
                 <span>{t("common.date")}</span>
               </div>
-              <p className="text-zinc-200 font-medium">
-                {formatDate(transaction.date)}
-              </p>
+              {canEditDate ? (
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="bg-transparent border-none text-zinc-200 font-medium p-0 focus:ring-0 w-full scheme-dark cursor-pointer"
+                />
+              ) : (
+                <p className="text-zinc-200 font-medium">
+                  {formatDate(transaction.date)}
+                </p>
+              )}
             </div>
             <div className="bg-zinc-800/50 p-3 rounded-xl">
               <div className="flex items-center gap-2 text-zinc-400 text-xs mb-1">

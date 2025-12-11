@@ -412,6 +412,7 @@ export default function AccountDetails() {
         }}
         transaction={selectedDetailsTransaction}
         account={account}
+        allowDateEdit={true}
       />
     </PageLayout>
   );

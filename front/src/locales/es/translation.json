@@ -195,6 +195,12 @@
       "monthly": "Mensual",
       "daily": "Diaria"
     },
+    "yieldBaseLabel": "Base de Cálculo",
+    "yieldFixedAmountLabel": "Monto Fijo",
+    "yieldBase": {
+      "total": "Saldo Total",
+      "fixed": "Monto Fijo"
+    },
     "createSuccess": "Cuenta creada exitosamente",
     "createError": "Error al crear cuenta",
     "editAccountTitle": "Editar Cuenta",
@@ -327,6 +333,7 @@
       "selectCategory": "Seleccionar categoría",
       "date": "Fecha",
       "account": "Cuenta",
+      "installments": "Meses (MSI)",
       "selectAccount": "Selecciona una cuenta",
       "create": "Crear Movimiento",
       "success": "Movimiento creado exitosamente",

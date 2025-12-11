@@ -208,6 +208,9 @@ creditLimit — Float
 
 yieldRate — Float (min: 0)  
 yieldFrequency — Enum(daily, weekly, monthly, annual)
+yieldCalculationBase — Enum(total, fixed) — default: total
+yieldFixedAmount — Float (min: 0) — optional
+lastYieldDate — Datetime — optional
 
 isArchived — Boolean  
 sortOrder — Integer
@@ -280,7 +283,7 @@ installments — Integer (default: 1)
 isPending — Boolean  
 isTransferLeg — Boolean  
 isDraft — Boolean  
-origin — Enum(manual, recurring, ocr)  
+origin — Enum(manual, recurring, ocr, yield)  
 isDeleted — Boolean
 
 ### 4.2 Relaciones

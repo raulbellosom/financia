@@ -8,6 +8,7 @@ import { Select } from "../components/ui/Select";
 import PageLayout from "../components/PageLayout";
 import AnimatedModal from "../components/AnimatedModal";
 import DeleteConfirmationModal from "../components/ui/DeleteConfirmationModal";
+import { formatAccountLabel } from "../utils/accountUtils";
 import {
   Plus,
   Pencil,
@@ -222,7 +223,30 @@ export default function RecurringRules() {
             required
           />
 
+          <Select
+            label={t("nav.accounts")}
+            value={formData.account}
+            onChange={(e) =>
+              setFormData({ ...formData, account: e.target.value })
+            }
+            options={[
+              { value: "", label: t("common.select") },
+              ...accounts.map((acc) => ({
+                value: acc.$id,
+                label: formatAccountLabel(acc),
+              })),
+            ]}
+          />
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Select
+              label={t("common.type")}
+              options={typeOptions}
+              value={formData.type}
+              onChange={(e) =>
+                setFormData({ ...formData, type: e.target.value })
+              }
+            />
             <Input
               label={t("common.amount")}
               type="number"
@@ -233,15 +257,21 @@ export default function RecurringRules() {
               }
               required
             />
-            <Select
-              label={t("common.type")}
-              options={typeOptions}
-              value={formData.type}
-              onChange={(e) =>
-                setFormData({ ...formData, type: e.target.value })
-              }
-            />
           </div>
+
+          <Select
+            label={t("nav.categories")}
+            value={formData.category}
+            onChange={(e) =>
+              setFormData({ ...formData, category: e.target.value })
+            }
+            options={[
+              { value: "", label: t("common.select") },
+              ...categories
+                .filter((c) => c.type === formData.type)
+                .map((cat) => ({ value: cat.$id, label: cat.name })),
+            ]}
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select
@@ -292,37 +322,6 @@ export default function RecurringRules() {
                 </span>
               </label>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Select
-              label={t("nav.categories")}
-              value={formData.category}
-              onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value })
-              }
-              options={[
-                { value: "", label: t("common.select") },
-                ...categories
-                  .filter((c) => c.type === formData.type)
-                  .map((cat) => ({ value: cat.$id, label: cat.name })),
-              ]}
-            />
-
-            <Select
-              label={t("nav.accounts")}
-              value={formData.account}
-              onChange={(e) =>
-                setFormData({ ...formData, account: e.target.value })
-              }
-              options={[
-                { value: "", label: t("common.select") },
-                ...accounts.map((acc) => ({
-                  value: acc.$id,
-                  label: acc.name,
-                })),
-              ]}
-            />
           </div>
 
           <div className="flex justify-end gap-3 mt-6">

@@ -4,6 +4,7 @@ import { Select } from "./ui/Select";
 import { useAccounts } from "../hooks/useAccounts";
 import { useCategories } from "../hooks/useCategories";
 import { useTranslation } from "react-i18next";
+import { formatAccountLabel } from "../utils/accountUtils";
 
 export default function TransactionFilters({
   accountId,
@@ -21,7 +22,7 @@ export default function TransactionFilters({
     { value: "", label: t("reports.allAccounts") },
     ...accounts.map((acc) => ({
       value: acc.$id,
-      label: acc.name,
+      label: formatAccountLabel(acc),
     })),
   ];
 

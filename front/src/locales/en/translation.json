@@ -195,6 +195,12 @@
       "monthly": "Monthly",
       "daily": "Daily"
     },
+    "yieldBaseLabel": "Calculation Base",
+    "yieldFixedAmountLabel": "Fixed Amount",
+    "yieldBase": {
+      "total": "Total Balance",
+      "fixed": "Fixed Amount"
+    },
     "createSuccess": "Account created successfully",
     "createError": "Failed to create account",
     "editAccountTitle": "Edit Account",
@@ -325,7 +331,9 @@
       "descPlaceholder": "What is this for?",
       "date": "Date",
       "account": "Account",
+      "installments": "Installments (MSI)",
       "selectAccount": "Select an account",
+      "selectCategory": "Select category",
       "create": "Create Transaction",
       "success": "Transaction created successfully",
       "error": "Failed to create transaction",

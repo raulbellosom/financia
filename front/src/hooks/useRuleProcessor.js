@@ -27,8 +27,6 @@ export const useRuleProcessor = () => {
 
       if (dueRules.length === 0) return;
 
-      console.log(`Processing ${dueRules.length} due recurring rules...`);
-
       for (const rule of dueRules) {
         try {
           // 1. Create Transaction
@@ -70,8 +68,6 @@ export const useRuleProcessor = () => {
             id: rule.$id,
             data: { nextRun: nextDate.toISOString() },
           });
-
-          console.log(`Processed rule: ${rule.name}, next run: ${nextDate}`);
         } catch (error) {
           console.error(`Failed to process rule ${rule.name}:`, error);
         }

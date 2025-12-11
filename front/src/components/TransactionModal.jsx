@@ -9,6 +9,7 @@ import { useAccounts } from "../hooks/useAccounts";
 import { useCategories } from "../hooks/useCategories";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { formatAccountLabel } from "../utils/accountUtils";
 
 export default function TransactionModal({ isOpen, onClose, initialDate }) {
   const { createTransaction, isCreating } = useTransactions();
@@ -89,7 +90,7 @@ export default function TransactionModal({ isOpen, onClose, initialDate }) {
 
   const accountOptions = accounts.map((acc) => ({
     value: acc.$id,
-    label: `${acc.name} ($${acc.currentBalance})`,
+    label: formatAccountLabel(acc),
   }));
 
   const categoryOptions = categories.map((cat) => ({
@@ -121,6 +122,32 @@ export default function TransactionModal({ isOpen, onClose, initialDate }) {
 
         <div className="p-6 overflow-y-auto custom-scrollbar">
           <form onSubmit={handleSubmit} className="space-y-4">
+            <Select
+              label={t("components.transactionModal.account")}
+              value={formData.account}
+              onChange={(e) =>
+                setFormData({ ...formData, account: e.target.value })
+              }
+              options={accountOptions}
+              placeholder={t("components.transactionModal.selectAccount")}
+            />
+
+            {isCreditCard && formData.type === "expense" && (
+              <Select
+                label={
+                  t("components.transactionModal.installments") || "Meses (MSI)"
+                }
+                value={formData.installments.toString()}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    installments: parseInt(e.target.value),
+                  })
+                }
+                options={installmentOptions}
+              />
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Select
                 label={t("components.transactionModal.type")}
@@ -174,32 +201,6 @@ export default function TransactionModal({ isOpen, onClose, initialDate }) {
               }
               required
             />
-
-            <Select
-              label={t("components.transactionModal.account")}
-              value={formData.account}
-              onChange={(e) =>
-                setFormData({ ...formData, account: e.target.value })
-              }
-              options={accountOptions}
-              placeholder={t("components.transactionModal.selectAccount")}
-            />
-
-            {isCreditCard && formData.type === "expense" && (
-              <Select
-                label={
-                  t("components.transactionModal.installments") || "Meses (MSI)"
-                }
-                value={formData.installments.toString()}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    installments: parseInt(e.target.value),
-                  })
-                }
-                options={installmentOptions}
-              />
-            )}
 
             <div className="pt-4">
               <Button type="submit" className="w-full" isLoading={isCreating}>

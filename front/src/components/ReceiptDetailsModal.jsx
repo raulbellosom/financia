@@ -13,6 +13,7 @@ import { useReceipts } from "../hooks/useReceipts";
 import { useTransactions } from "../hooks/useTransactions";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
+import { formatAccountLabel } from "../utils/accountUtils";
 
 export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
   const { t } = useTranslation();
@@ -181,7 +182,7 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
 
   const accountOptions = accounts.map((acc) => ({
     value: acc.$id,
-    label: acc.name,
+    label: formatAccountLabel(acc),
   }));
 
   const categoryOptions = categories

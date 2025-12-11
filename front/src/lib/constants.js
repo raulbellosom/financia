@@ -17,3 +17,32 @@ export const APPWRITE_CONFIG = {
   RECURRING_RULES_COLLECTION_ID: import.meta.env
     .VITE_APPWRITE_RECURRING_RULES_COLLECTION_ID,
 };
+
+export const ACCOUNT_TYPES = {
+  CASH: "cash",
+  DEBIT: "debit",
+  CREDIT: "credit",
+  SAVINGS: "savings",
+  INVESTMENT: "investment",
+  WALLET: "wallet",
+  OTHER: "other",
+};
+
+export const YIELD_FREQUENCIES = {
+  DAILY: "daily",
+  WEEKLY: "weekly",
+  MONTHLY: "monthly",
+  ANNUAL: "annual",
+};
+
+export const YIELD_CALCULATION_BASE = {
+  TOTAL: "total",
+  FIXED: "fixed",
+};
+
+export const TRANSACTION_ORIGINS = {
+  MANUAL: "manual",
+  RECURRING: "recurring",
+  OCR: "ocr",
+  YIELD: "yield",
+};
