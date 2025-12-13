@@ -129,7 +129,8 @@ export default function ReceiptDetailsModal({
         if (transaction.isDraft) {
           // Confirm Draft
           const [year, month, day] = formData.date.split("-").map(Number);
-          const localDate = new Date(year, month - 1, day, 12, 0, 0);
+          // Use UTC noon to avoid timezone shifts
+          const utcDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
 
           await confirmDraft({
             transactionId: transaction.$id,
@@ -137,7 +138,7 @@ export default function ReceiptDetailsModal({
               account: formData.account,
               category: formData.category,
               description: formData.description,
-              date: localDate.toISOString(),
+              date: utcDate.toISOString(),
               amount: parseFloat(formData.amount),
               installments: parseInt(formData.installments) || 1,
             },
@@ -150,7 +151,8 @@ export default function ReceiptDetailsModal({
           const amountDiff = newAmount - oldAmount;
 
           const [year, month, day] = formData.date.split("-").map(Number);
-          const localDate = new Date(year, month - 1, day, 12, 0, 0);
+          // Use UTC noon to avoid timezone shifts
+          const utcDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
 
           // 1. Update Transaction
           await updateTransaction({
@@ -159,7 +161,7 @@ export default function ReceiptDetailsModal({
               // Account is disabled for confirmed transactions, so we don't update it
               category: formData.category,
               description: formData.description,
-              date: localDate.toISOString(),
+              date: utcDate.toISOString(),
               amount: newAmount,
             },
           });

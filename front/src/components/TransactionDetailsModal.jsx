@@ -131,12 +131,9 @@ export default function TransactionDetailsModal({
       };
 
       if (canEditDate && date) {
-        const originalDate = new Date(transaction.date);
         const [year, month, day] = date.split("-").map(Number);
-        const newDate = new Date(originalDate);
-        newDate.setFullYear(year);
-        newDate.setMonth(month - 1);
-        newDate.setDate(day);
+        // Create a new date at noon UTC to ensure stability across timezones
+        const newDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
         updates.date = newDate.toISOString();
       }
 
