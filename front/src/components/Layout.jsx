@@ -93,8 +93,8 @@ export default function Layout({ children }) {
 
     window.addEventListener("beforeinstallprompt", handler);
 
-    // For iOS, check immediately since there's no event
-    if (isIOSDevice && !isStandaloneMode) {
+    // Check immediately for all devices if not standalone
+    if (!isStandaloneMode) {
       checkShowPrompt();
     }
 
@@ -109,19 +109,42 @@ export default function Layout({ children }) {
         setDeferredPrompt(null);
         setShowInstallPrompt(false);
       }
-    } else if (isIOS) {
+    } else {
       toast(
         (t) => (
           <div className="flex flex-col gap-2">
-            <span className="font-bold">Instalar en iPhone/iPad</span>
-            <span className="text-sm">
-              1. Pulsa el botón Compartir{" "}
-              <span className="inline-block px-1 bg-zinc-800 rounded">⎋</span>
+            <span className="font-bold">
+              {isIOS ? "Instalar en iPhone/iPad" : "Instalar Aplicación"}
             </span>
-            <span className="text-sm">
-              2. Selecciona "Agregar a Inicio"{" "}
-              <span className="inline-block px-1 bg-zinc-800 rounded">+</span>
-            </span>
+            {isIOS ? (
+              <>
+                <span className="text-sm">
+                  1. Pulsa el botón Compartir{" "}
+                  <span className="inline-block px-1 bg-zinc-800 rounded">
+                    ⎋
+                  </span>
+                </span>
+                <span className="text-sm">
+                  2. Selecciona "Agregar a Inicio"{" "}
+                  <span className="inline-block px-1 bg-zinc-800 rounded">
+                    +
+                  </span>
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="text-sm">
+                  1. Abre el menú del navegador{" "}
+                  <span className="inline-block px-1 bg-zinc-800 rounded">
+                    ⋮
+                  </span>
+                </span>
+                <span className="text-sm">
+                  2. Selecciona "Instalar aplicación" o "Agregar a la pantalla
+                  principal"
+                </span>
+              </>
+            )}
             <button
               onClick={() => toast.dismiss(t.id)}
               className="mt-2 px-3 py-1 bg-emerald-500 text-white text-xs rounded-lg self-start"
@@ -583,7 +606,7 @@ export default function Layout({ children }) {
                       </span>
                     </button>
 
-                    {(deferredPrompt || (isIOS && !isStandalone)) && (
+                    {!isStandalone && (
                       <button
                         onClick={handleInstallClick}
                         className="w-full flex items-center gap-4 p-4 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors"
