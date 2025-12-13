@@ -108,7 +108,10 @@
     "incomeRecent": "Income (Recent)",
     "expensesRecent": "Expenses (Recent)",
     "recentActivity": "Recent Activity",
-    "noActivity": "No recent transactions"
+    "noActivity": "No recent transactions",
+    "monthlyTrend": "Monthly Trend",
+    "expensesByCategory": "Expenses by Category",
+    "noExpenses": "No expenses this month"
   },
   "receipts": {
     "title": "Receipts",

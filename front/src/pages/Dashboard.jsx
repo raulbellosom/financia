@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useAccounts } from "../hooks/useAccounts";
 import { useTransactions } from "../hooks/useTransactions";
 import TransactionDetailsModal from "../components/TransactionDetailsModal";
+import DashboardCharts from "../components/DashboardCharts";
 import {
   Wallet,
   TrendingUp,
@@ -127,6 +128,8 @@ export default function Dashboard() {
           </p>
         </div>
       </div>
+
+      <DashboardCharts />
 
       {/* Recent Activity */}
       <div className="space-y-4">
