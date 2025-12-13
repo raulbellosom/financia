@@ -8,7 +8,7 @@ from appwrite.services.storage import Storage
 from appwrite.query import Query
 from appwrite.id import ID
 import pytesseract
-from PIL import Image, ImageEnhance, ImageFilter
+from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 from io import BytesIO
 
 # Configuración
@@ -346,6 +346,7 @@ def create_draft_transaction(receipt, amount, date, merchant, profile_id):
             'isTransferLeg': False,
             'isPending': False,
             'isDeleted': False,
+            'installments': 1,
         }
         
         transaction = databases.create_document(
@@ -381,6 +382,9 @@ def process_receipt(receipt):
         # 2. Download image
         result = storage.get_file_download(BUCKET_ID, receipt['fileId'])
         image = Image.open(BytesIO(result))
+        
+        # Fix orientation based on EXIF data (crucial for phone photos)
+        image = ImageOps.exif_transpose(image)
         
         # 3. Apply OCR with Spanish language support
         # Preprocess image for better accuracy
