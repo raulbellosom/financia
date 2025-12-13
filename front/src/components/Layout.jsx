@@ -87,14 +87,15 @@ export default function Layout({ children }) {
 
     const handler = (e) => {
       e.preventDefault();
+      window.deferredPrompt = e;
       setDeferredPrompt(e);
       checkShowPrompt();
     };
 
     window.addEventListener("beforeinstallprompt", handler);
 
-    // Check immediately for all devices if not standalone
-    if (!isStandaloneMode) {
+    // For iOS, check immediately since there's no event
+    if (isIOSDevice && !isStandaloneMode) {
       checkShowPrompt();
     }
 
@@ -102,10 +103,12 @@ export default function Layout({ children }) {
   }, []);
 
   const handleInstallClick = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
+    const promptEvent = deferredPrompt || window.deferredPrompt;
+    if (promptEvent) {
+      promptEvent.prompt();
+      const { outcome } = await promptEvent.userChoice;
       if (outcome === "accepted") {
+        window.deferredPrompt = null;
         setDeferredPrompt(null);
         setShowInstallPrompt(false);
       }

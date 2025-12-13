@@ -260,7 +260,7 @@ export default function DashboardCharts() {
           </div>
         </div>
         <div className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <AreaChart
               data={trendData}
               margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
@@ -333,7 +333,7 @@ export default function DashboardCharts() {
         </div>
         <div className="h-[300px] w-full">
           {categoryData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <PieChart>
                 <Pie
                   data={categoryData}
