@@ -21,6 +21,7 @@ import {
   LayoutGrid,
   MoreVertical,
   Edit2,
+  X,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useMemo } from "react";
@@ -237,7 +238,7 @@ export default function Receipts() {
       groups[key].push(receipt);
       return groups;
     }, {});
-  }, [receipts, groupBy, filterStatus, t]);
+  }, [receipts, groupBy, filterStatus, filterDate, t]);
 
   const handleFileUpload = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -335,12 +336,22 @@ export default function Receipts() {
               <Calendar size={16} />
               {t("common.date")}:
             </span>
-            <input
-              type="date"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-              className="bg-zinc-900 border border-zinc-800 text-zinc-300 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-1.5 scheme-dark"
-            />
+            <div className="relative flex items-center">
+              <input
+                type="date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                className="bg-zinc-900 border border-zinc-800 text-zinc-300 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-1.5 scheme-dark pr-8"
+              />
+              {filterDate && (
+                <button
+                  onClick={() => setFilterDate("")}
+                  className="absolute right-2 text-zinc-500 hover:text-zinc-300 p-0.5 rounded-full hover:bg-zinc-800 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
