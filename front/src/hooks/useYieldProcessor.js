@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAccounts } from "./useAccounts";
 import { useTransactions } from "./useTransactions";
 import {
@@ -11,6 +11,7 @@ import { TRANSACTION_ORIGINS } from "../lib/constants";
 export const useYieldProcessor = () => {
   const { accounts, updateAccount } = useAccounts();
   const { createTransaction } = useTransactions();
+  const processingRef = useRef(new Set());
 
   useEffect(() => {
     const processYields = async () => {
@@ -21,12 +22,16 @@ export const useYieldProcessor = () => {
       );
 
       for (const account of investmentAccounts) {
+        if (processingRef.current.has(account.$id)) continue;
+
         if (shouldGenerateYield(account)) {
           const missedDays = getMissedYieldDays(account);
           if (missedDays <= 0) continue;
 
           const dailyYield = calculateDailyYield(account);
           if (dailyYield <= 0) continue;
+
+          processingRef.current.add(account.$id);
 
           const totalYield = dailyYield * missedDays;
 
@@ -61,6 +66,8 @@ export const useYieldProcessor = () => {
               `Error processing yield for account ${account.name}:`,
               error
             );
+          } finally {
+            processingRef.current.delete(account.$id);
           }
         }
       }

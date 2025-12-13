@@ -57,10 +57,14 @@ export default function TransactionModal({ isOpen, onClose, initialDate }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Create date in local time to avoid timezone shifts
+      const [year, month, day] = formData.date.split("-").map(Number);
+      const localDate = new Date(year, month - 1, day);
+
       await createTransaction({
         ...formData,
         amount: parseFloat(formData.amount),
-        date: new Date(formData.date).toISOString(),
+        date: localDate.toISOString(),
         installments: parseInt(formData.installments) || 1,
       });
       toast.success(t("components.transactionModal.success"));
