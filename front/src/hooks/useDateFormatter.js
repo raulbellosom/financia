@@ -13,6 +13,7 @@ export const useDateFormatter = () => {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
+      timeZone: "UTC", // Force UTC to avoid timezone shifts
       ...options,
     };
 

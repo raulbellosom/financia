@@ -96,6 +96,7 @@ export const getNextPeriod = (startDate, endDate) => {
 export const formatPeriodLabel = (startDate, endDate, locale = "es-MX") => {
   const start = new Date(startDate);
   const end = new Date(endDate);
+  const options = { timeZone: "UTC" };
 
   // Same day
   if (start.toDateString() === end.toDateString()) {
@@ -103,27 +104,31 @@ export const formatPeriodLabel = (startDate, endDate, locale = "es-MX") => {
       day: "numeric",
       month: "long",
       year: "numeric",
+      ...options,
     });
   }
 
   // Same month
   if (
-    start.getMonth() === end.getMonth() &&
-    start.getFullYear() === end.getFullYear()
+    start.getUTCMonth() === end.getUTCMonth() &&
+    start.getUTCFullYear() === end.getUTCFullYear()
   ) {
     return start.toLocaleDateString(locale, {
       month: "long",
       year: "numeric",
+      ...options,
     });
   }
 
   // Same year
-  if (start.getFullYear() === end.getFullYear()) {
+  if (start.getUTCFullYear() === end.getUTCFullYear()) {
     return `${start.toLocaleDateString(locale, {
       month: "short",
+      ...options,
     })} - ${end.toLocaleDateString(locale, {
       month: "short",
       year: "numeric",
+      ...options,
     })}`;
   }
 
@@ -131,7 +136,12 @@ export const formatPeriodLabel = (startDate, endDate, locale = "es-MX") => {
   return `${start.toLocaleDateString(locale, {
     month: "short",
     year: "numeric",
-  })} - ${end.toLocaleDateString(locale, { month: "short", year: "numeric" })}`;
+    ...options,
+  })} - ${end.toLocaleDateString(locale, {
+    month: "short",
+    year: "numeric",
+    ...options,
+  })}`;
 };
 
 /**
@@ -143,12 +153,12 @@ export const groupTransactionsByDate = (transactions) => {
   const grouped = {};
 
   transactions.forEach((tx) => {
-    // Use local date for grouping to match user's timezone
+    // Use UTC date for grouping to avoid timezone shifts
     const date = new Date(tx.date);
-    // Get local YYYY-MM-DD
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
+    // Get UTC YYYY-MM-DD
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
     const dateKey = `${year}-${month}-${day}`;
 
     if (!grouped[dateKey]) {

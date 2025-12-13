@@ -226,11 +226,13 @@ export default function Receipts() {
           year: "numeric",
           month: "long",
           day: "numeric",
+          timeZone: "UTC",
         });
       } else if (groupBy === "month") {
         key = date.toLocaleDateString(undefined, {
           year: "numeric",
           month: "long",
+          timeZone: "UTC",
         });
       }
 
