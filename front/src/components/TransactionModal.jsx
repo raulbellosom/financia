@@ -58,8 +58,9 @@ export default function TransactionModal({ isOpen, onClose, initialDate }) {
     e.preventDefault();
     try {
       // Create date in local time to avoid timezone shifts
+      // Set time to 12:00 PM (noon) to avoid boundary issues
       const [year, month, day] = formData.date.split("-").map(Number);
-      const localDate = new Date(year, month - 1, day);
+      const localDate = new Date(year, month - 1, day, 12, 0, 0);
 
       await createTransaction({
         ...formData,

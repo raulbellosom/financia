@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Check, Trash2, AlertCircle, Copy } from "lucide-react";
+import { X, Check, Trash2, AlertCircle, Copy, Edit2, Save } from "lucide-react";
 import { Button } from "./ui/Button";
 import { Select } from "./ui/Select";
 import { Input } from "./ui/Input";
@@ -17,16 +17,22 @@ import { formatAccountLabel } from "../utils/accountUtils";
 import { useAuth } from "../context/AuthContext";
 import { getTodayInTimezone } from "../utils/dateUtils";
 
-export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
+export default function ReceiptDetailsModal({
+  isOpen,
+  onClose,
+  receipt,
+  initialEditMode = false,
+}) {
   const { t } = useTranslation();
-  const { accounts } = useAccounts();
+  const { accounts, updateAccount } = useAccounts();
   const { categories } = useCategories();
   const { confirmDraft, deleteReceipt } = useReceipts();
-  const { createTransaction } = useTransactions();
+  const { createTransaction, updateTransaction } = useTransactions();
   const { userInfo } = useAuth();
 
   const [transaction, setTransaction] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(initialEditMode);
   const [formData, setFormData] = useState({
     account: "",
     category: "",
@@ -36,6 +42,10 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
     installments: "1",
   });
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+
+  useEffect(() => {
+    setIsEditing(initialEditMode);
+  }, [initialEditMode, isOpen]);
 
   // Fetch linked transaction if exists
   useEffect(() => {
@@ -96,7 +106,7 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
     }
   };
 
-  const handleConfirmDraft = async () => {
+  const handleSave = async () => {
     if (!formData.account) {
       toast.error(t("receipts.selectAccount"));
       return;
@@ -116,25 +126,86 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
 
     try {
       if (transaction) {
-        await confirmDraft({
-          transactionId: transaction.$id,
-          updates: {
-            account: formData.account,
-            category: formData.category,
-            description: formData.description,
-            date: new Date(formData.date).toISOString(),
-            amount: parseFloat(formData.amount),
-            installments: parseInt(formData.installments) || 1,
-          },
-        });
-        toast.success(t("receipts.draftConfirmed"));
+        if (transaction.isDraft) {
+          // Confirm Draft
+          const [year, month, day] = formData.date.split("-").map(Number);
+          const localDate = new Date(year, month - 1, day, 12, 0, 0);
+
+          await confirmDraft({
+            transactionId: transaction.$id,
+            updates: {
+              account: formData.account,
+              category: formData.category,
+              description: formData.description,
+              date: localDate.toISOString(),
+              amount: parseFloat(formData.amount),
+              installments: parseInt(formData.installments) || 1,
+            },
+          });
+          toast.success(t("receipts.draftConfirmed"));
+        } else {
+          // Update Confirmed Transaction
+          const newAmount = parseFloat(formData.amount);
+          const oldAmount = transaction.amount;
+          const amountDiff = newAmount - oldAmount;
+
+          const [year, month, day] = formData.date.split("-").map(Number);
+          const localDate = new Date(year, month - 1, day, 12, 0, 0);
+
+          // 1. Update Transaction
+          await updateTransaction({
+            id: transaction.$id,
+            updates: {
+              // Account is disabled for confirmed transactions, so we don't update it
+              category: formData.category,
+              description: formData.description,
+              date: localDate.toISOString(),
+              amount: newAmount,
+            },
+          });
+
+          // 2. Update Balance if amount changed
+          if (Math.abs(amountDiff) > 0.001) {
+            const account = accounts.find((a) => a.$id === transaction.account);
+            if (account) {
+              let newBalance = account.currentBalance;
+
+              if (account.type === "credit") {
+                // Credit Card: Expense increases debt (positive balance)
+                if (transaction.type === "expense") {
+                  newBalance += amountDiff;
+                } else {
+                  newBalance -= amountDiff;
+                }
+              } else {
+                // Asset: Expense decreases balance
+                if (transaction.type === "expense") {
+                  newBalance -= amountDiff;
+                } else {
+                  newBalance += amountDiff;
+                }
+              }
+
+              await updateAccount({
+                id: account.$id,
+                data: { currentBalance: newBalance },
+              });
+            }
+          }
+
+          toast.success(t("common.saved"));
+          setIsEditing(false);
+        }
       } else {
         // Create new transaction
+        const [year, month, day] = formData.date.split("-").map(Number);
+        const localDate = new Date(year, month - 1, day, 12, 0, 0);
+
         const newTx = await createTransaction({
           account: formData.account,
           category: formData.category,
           description: formData.description,
-          date: new Date(formData.date).toISOString(),
+          date: localDate.toISOString(),
           amount: parseFloat(formData.amount),
           type: "expense", // Default to expense for receipts
           installments: parseInt(formData.installments) || 1,
@@ -198,14 +269,67 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
   const selectedAccount = accounts.find((a) => a.$id === formData.account);
   const isCreditCard = selectedAccount?.type === "credit";
 
+  // Check if transaction can be edited based on rules
+  const canEditTransaction = () => {
+    if (!transaction || transaction.isDraft) return true;
+
+    const txDate = new Date(transaction.date);
+    const now = new Date();
+
+    // 1. Check if same month (User requirement: "dentro del mes hecho")
+    const isSameMonth =
+      txDate.getMonth() === now.getMonth() &&
+      txDate.getFullYear() === now.getFullYear();
+
+    if (!isSameMonth) return false;
+
+    // 2. If Credit Card, check cutoff date (User requirement: "antes del corte")
+    if (selectedAccount?.type === "credit" && selectedAccount.billingDay) {
+      const billingDay = parseInt(selectedAccount.billingDay);
+      let cutoffDate = new Date(txDate);
+
+      // If tx is before or on billing day, cutoff is this month's billing day
+      if (txDate.getDate() <= billingDay) {
+        cutoffDate.setDate(billingDay);
+      } else {
+        // If tx is after billing day, cutoff is next month's billing day
+        cutoffDate.setMonth(cutoffDate.getMonth() + 1);
+        cutoffDate.setDate(billingDay);
+      }
+
+      // Set cutoff time to end of day
+      cutoffDate.setHours(23, 59, 59, 999);
+
+      if (now > cutoffDate) return false;
+    }
+
+    return true;
+  };
+
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-4xl w-full max-h-[90dvh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-zinc-900 border-b border-zinc-800 p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-white">
-            {t("receipts.receiptDetails")}
-          </h2>
+        <div className="sticky top-0 bg-zinc-900 border-b border-zinc-800 p-6 flex items-center justify-between z-10">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold text-white">
+              {t("receipts.receiptDetails")}
+            </h2>
+            {transaction &&
+              !transaction.isDraft &&
+              !isEditing &&
+              canEditTransaction() && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsEditing(true)}
+                  className="ml-2"
+                >
+                  <Edit2 size={16} className="mr-2" />
+                  {t("common.edit")}
+                </Button>
+              )}
+          </div>
           <button
             onClick={onClose}
             className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
@@ -301,7 +425,15 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
                     <p className="text-sm text-zinc-500 mb-1">
                       {t("receipts.confidence")}
                     </p>
-                    <p className={`text-lg font-semibold ${confidenceColor}`}>
+                    <p
+                      className={`text-lg font-semibold ${
+                        receipt.confidence > 0.8
+                          ? "text-emerald-500"
+                          : receipt.confidence > 0.5
+                          ? "text-yellow-500"
+                          : "text-red-500"
+                      }`}
+                    >
                       {(receipt.confidence * 100).toFixed(0)}%
                     </p>
                   </div>
@@ -310,15 +442,21 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
             </div>
           </div>
 
-          {/* Draft Transaction Form */}
-          {((transaction && transaction.isDraft) ||
+          {/* Transaction Form (Draft or Edit Mode) */}
+          {((transaction && (transaction.isDraft || isEditing)) ||
             (!transaction && receipt.status === "processed")) && (
             <div className="bg-zinc-800/50 rounded-xl p-6 space-y-4">
               <div className="flex items-center gap-2 mb-4">
-                <AlertCircle size={20} className="text-yellow-500" />
+                {transaction?.isDraft ? (
+                  <AlertCircle size={20} className="text-yellow-500" />
+                ) : (
+                  <Edit2 size={20} className="text-blue-500" />
+                )}
                 <h3 className="text-lg font-semibold text-white">
                   {transaction
-                    ? t("receipts.draftTransaction")
+                    ? transaction.isDraft
+                      ? t("receipts.draftTransaction")
+                      : t("receipts.editTransaction")
                     : t("receipts.createTransaction")}
                 </h3>
               </div>
@@ -338,6 +476,7 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
                       { value: "", label: t("receipts.selectAccount") },
                       ...accountOptions,
                     ]}
+                    disabled={transaction && !transaction.isDraft} // Disable account change for confirmed transactions
                   />
                 </div>
 
@@ -385,7 +524,19 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
                       setFormData({ ...formData, amount: e.target.value })
                     }
                     placeholder="0.00"
+                    disabled={
+                      transaction &&
+                      !transaction.isDraft &&
+                      !canEditTransaction()
+                    }
                   />
+                  {transaction &&
+                    !transaction.isDraft &&
+                    !canEditTransaction() && (
+                      <p className="text-xs text-zinc-500 mt-1">
+                        {t("receipts.amountLocked")}
+                      </p>
+                    )}
                 </div>
 
                 {/* Date */}
@@ -422,6 +573,7 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
                         { value: "18", label: "18 Meses" },
                         { value: "24", label: "24 Meses" },
                       ]}
+                      disabled={transaction && !transaction.isDraft} // Disable installments for confirmed
                     />
                   </div>
                 )}
@@ -430,24 +582,41 @@ export default function ReceiptDetailsModal({ isOpen, onClose, receipt }) {
               {/* Actions */}
               <div className="flex gap-3 pt-4">
                 <Button
-                  onClick={handleConfirmDraft}
+                  onClick={handleSave}
                   className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-zinc-950"
                   disabled={
                     !formData.account || !formData.category || !formData.amount
                   }
                 >
-                  <Check size={20} className="mr-2" />
+                  {transaction && !transaction.isDraft ? (
+                    <Save size={20} className="mr-2" />
+                  ) : (
+                    <Check size={20} className="mr-2" />
+                  )}
                   {transaction
-                    ? t("receipts.confirmTransaction")
+                    ? transaction.isDraft
+                      ? t("receipts.confirmTransaction")
+                      : t("common.save")
                     : t("receipts.createTransaction")}
                 </Button>
-                {transaction && (
+
+                {transaction && transaction.isDraft && (
                   <Button
                     onClick={handleDeleteDraft}
                     className="bg-red-500/10 hover:bg-red-500/20 text-red-500"
                   >
                     <Trash2 size={20} className="mr-2" />
                     {t("receipts.deleteDraft")}
+                  </Button>
+                )}
+
+                {transaction && !transaction.isDraft && (
+                  <Button
+                    onClick={() => setIsEditing(false)}
+                    variant="ghost"
+                    className="text-zinc-400 hover:text-white"
+                  >
+                    {t("common.cancel")}
                   </Button>
                 )}
               </div>

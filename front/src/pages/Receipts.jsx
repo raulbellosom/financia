@@ -19,6 +19,8 @@ import {
   Grid,
   List,
   LayoutGrid,
+  MoreVertical,
+  Edit2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useMemo } from "react";
@@ -27,9 +29,14 @@ import { useTranslation } from "react-i18next";
 import { useDateFormatter } from "../hooks/useDateFormatter";
 
 // Extracted Card Component for better state handling
-// Extracted Card Component for better state handling
-const ReceiptCard = ({ receipt, onDeleteRequest, onViewRequest }) => {
+const ReceiptCard = ({
+  receipt,
+  onDeleteRequest,
+  onViewRequest,
+  onEditRequest,
+}) => {
   const [imageError, setImageError] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const { t } = useTranslation();
   const { formatDate } = useDateFormatter();
 
@@ -53,10 +60,11 @@ const ReceiptCard = ({ receipt, onDeleteRequest, onViewRequest }) => {
 
   return (
     <div
-      className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden group hover:border-zinc-700 transition-all relative cursor-pointer flex flex-col"
+      className="bg-zinc-900 border border-zinc-800 rounded-xl group hover:border-zinc-700 transition-all relative cursor-pointer flex flex-col"
       onClick={() => onViewRequest(receipt)}
+      onMouseLeave={() => setShowMenu(false)}
     >
-      <div className="aspect-4/3 bg-zinc-950 relative overflow-hidden">
+      <div className="aspect-4/3 bg-zinc-950 relative overflow-hidden rounded-t-xl">
         {/* Fallback Icon */}
         <div className="absolute inset-0 flex items-center justify-center text-zinc-800">
           <FileText size={32} />
@@ -88,33 +96,67 @@ const ReceiptCard = ({ receipt, onDeleteRequest, onViewRequest }) => {
             {t(`status.${receipt.status}`, receipt.status)}
           </span>
         </div>
+      </div>
 
-        {/* Actions Overlay */}
-        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-20">
+      {/* Actions Menu - Positioned relative to card, not image, to allow overflow */}
+      <div className="absolute top-2 left-2 z-30 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+        <div className="relative">
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onViewRequest(receipt);
+              setShowMenu(!showMenu);
             }}
-            className="p-1.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors"
-            title={t("common.view")}
+            className="p-1.5 bg-black/50 backdrop-blur-md text-white rounded-full hover:bg-black/70 transition-colors"
           >
-            <Eye size={14} />
+            <MoreVertical size={16} />
           </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteRequest(receipt);
-            }}
-            className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors"
-            title={t("common.delete")}
-          >
-            <Trash2 size={14} />
-          </button>
+
+          {showMenu && (
+            <div className="absolute top-full left-0 mt-1 w-32 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-50 flex flex-col overflow-hidden">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMenu(false);
+                  onViewRequest(receipt);
+                }}
+                className="px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-700 hover:text-white flex items-center gap-2"
+              >
+                <Eye size={14} />
+                {t("common.view")}
+              </button>
+
+              {/* Only show Edit if processed */}
+              {receipt.status === "processed" && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowMenu(false);
+                    onEditRequest(receipt);
+                  }}
+                  className="px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-700 hover:text-white flex items-center gap-2"
+                >
+                  <Edit2 size={14} />
+                  {t("common.edit")}
+                </button>
+              )}
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMenu(false);
+                  onDeleteRequest(receipt);
+                }}
+                className="px-3 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-2"
+              >
+                <Trash2 size={14} />
+                {t("common.delete")}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="p-3 flex flex-col gap-1">
+      <div className="p-3 flex flex-col gap-1 rounded-b-xl">
         <div className="flex items-center justify-between">
           <span className="text-xs text-zinc-500">
             {formatDate(receipt.detectedDate || receipt.$createdAt)}
@@ -144,6 +186,7 @@ export default function Receipts() {
   // UI State
   const [groupBy, setGroupBy] = useState("day"); // 'day', 'month', 'all'
   const [filterStatus, setFilterStatus] = useState("all"); // 'all', 'processed', 'processing', 'failed'
+  const [filterDate, setFilterDate] = useState("");
 
   // Modals State
   const [receiptToDelete, setReceiptToDelete] = useState(null);
@@ -151,15 +194,21 @@ export default function Receipts() {
 
   const [receiptToView, setReceiptToView] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [initialEditMode, setInitialEditMode] = useState(false);
 
   // Grouping Logic
   const groupedReceipts = useMemo(() => {
     if (!receipts) return {};
 
     // 1. Filter
-    const filtered = receipts.filter(
-      (r) => filterStatus === "all" || r.status === filterStatus
-    );
+    const filtered = receipts.filter((r) => {
+      const statusMatch = filterStatus === "all" || r.status === filterStatus;
+      const dateMatch =
+        !filterDate ||
+        (r.detectedDate && r.detectedDate.startsWith(filterDate)) ||
+        (!r.detectedDate && r.$createdAt.startsWith(filterDate));
+      return statusMatch && dateMatch;
+    });
 
     // 2. Group
     if (groupBy === "all") {
@@ -280,23 +329,40 @@ export default function Receipts() {
         </div>
 
         {/* Filter */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-zinc-400 flex items-center gap-1">
-            <Filter size={16} />
-            {t("common.filter")}:
-          </span>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="bg-zinc-900 border border-zinc-800 text-zinc-300 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-1.5"
-          >
-            <option value="all">{t("common.all")}</option>
-            <option value="processed">{t("receipts.status.processed")}</option>
-            <option value="processing">
-              {t("receipts.status.processing")}
-            </option>
-            <option value="failed">{t("receipts.status.failed")}</option>
-          </select>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-zinc-400 flex items-center gap-1">
+              <Calendar size={16} />
+              {t("common.date")}:
+            </span>
+            <input
+              type="date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="bg-zinc-900 border border-zinc-800 text-zinc-300 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-1.5 [color-scheme:dark]"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-zinc-400 flex items-center gap-1">
+              <Filter size={16} />
+              {t("common.filter")}:
+            </span>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="bg-zinc-900 border border-zinc-800 text-zinc-300 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-1.5"
+            >
+              <option value="all">{t("common.all")}</option>
+              <option value="processed">
+                {t("receipts.status.processed")}
+              </option>
+              <option value="processing">
+                {t("receipts.status.processing")}
+              </option>
+              <option value="failed">{t("receipts.status.failed")}</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -331,8 +397,20 @@ export default function Receipts() {
                   <ReceiptCard
                     key={receipt.$id}
                     receipt={receipt}
-                    onDeleteRequest={openDeleteModal}
-                    onViewRequest={openDetailsModal}
+                    onDeleteRequest={(r) => {
+                      setReceiptToDelete(r);
+                      setIsDeleteModalOpen(true);
+                    }}
+                    onViewRequest={(r) => {
+                      setReceiptToView(r);
+                      setInitialEditMode(false);
+                      setIsDetailsModalOpen(true);
+                    }}
+                    onEditRequest={(r) => {
+                      setReceiptToView(r);
+                      setInitialEditMode(true);
+                      setIsDetailsModalOpen(true);
+                    }}
                   />
                 ))}
               </div>
@@ -355,6 +433,7 @@ export default function Receipts() {
       <ReceiptDetailsModal
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
+        initialEditMode={initialEditMode}
         receipt={receiptToView}
       />
     </PageLayout>

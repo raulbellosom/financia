@@ -196,7 +196,7 @@ export default function TransactionDetailsModal({
 
         <div className="space-y-6">
           {/* Basic Info */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div className="bg-zinc-800/50 p-3 rounded-xl">
               <div className="flex items-center gap-2 text-zinc-400 text-xs mb-1">
                 <Calendar size={14} />

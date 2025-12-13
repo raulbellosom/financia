@@ -123,6 +123,7 @@
     "deleteSuccess": "Receipt deleted successfully",
     "deleteError": "Failed to delete receipt",
     "receiptDetails": "Receipt Details",
+    "editTransaction": "Edit Transaction",
     "ocrResults": "OCR Results",
     "status": "Status",
     "detectedAmount": "Detected Amount",
