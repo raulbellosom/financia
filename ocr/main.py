@@ -52,9 +52,13 @@ def preprocess_image(image):
     enhancer = ImageEnhance.Contrast(img)
     img = enhancer.enhance(2.0)
     
+    # Binarize (threshold)
+    # Fixed threshold for receipts; can be adaptive with OpenCV but this works for PIL
+    img = img.point(lambda p: 255 if p > 170 else 0)
+
     # Increase sharpness
     enhancer = ImageEnhance.Sharpness(img)
-    img = enhancer.enhance(2.0)
+    img = enhancer.enhance(1.5)
     
     return img
 
@@ -165,6 +169,35 @@ def extract_amount(text):
         print(f"✓ Best amount detected: {best_amount} (pattern: {best_pattern}) from {len(candidates)} candidates")
         return best_amount
     
+    # Fallback: find any money-like amounts and take the max
+    print("⚠ No specific pattern matched. Trying fallback search for any amount...")
+    money = re.findall(r'\$?\s*(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', text_cleaned)
+    vals = []
+    for m in money:
+        v = m.replace(" ", "")
+        # Determine if comma or period is decimal separator
+        last_comma = v.rfind(',')
+        last_period = v.rfind('.')
+        
+        if last_comma > last_period:
+            # Comma is decimal separator
+            v = v.replace('.', '').replace(',', '.')
+        else:
+            # Period is decimal separator
+            v = v.replace(',', '')
+            
+        try:
+            val = float(v)
+            if 0.01 <= val <= 999999.99:
+                vals.append(val)
+        except:
+            pass
+            
+    if vals:
+        best_amount = max(vals)
+        print(f"✓ Fallback amount detected: {best_amount}")
+        return best_amount
+
     print("✗ No amount detected with any pattern")
     return None
 
@@ -353,24 +386,40 @@ def process_receipt(receipt):
         # Preprocess image for better accuracy
         processed_image = preprocess_image(image)
         
-        # Configure Tesseract for Spanish and receipt format
-        # PSM 6: Assume a single uniform block of text (good for receipts)
-        custom_config = r'--oem 3 --psm 6'
+        # Multi-try strategy for better results on tickets
+        langs = ["spa", "spa+eng", "eng"]
+        psms = [6, 4, 11]
         
-        # Try with Spanish language first
-        text = pytesseract.image_to_string(processed_image, lang='spa', config=custom_config)
+        best_text = ""
+        best_len = 0
         
-        # If text is too short, try with both Spanish and English
+        print("Iniciando OCR multi-try...")
+        
+        for lang in langs:
+            for psm in psms:
+                # OEM 1 (LSTM only) often works better for tickets
+                # preserve_interword_spaces=1 helps avoid merging words
+                cfg = f"--oem 1 --psm {psm} -c preserve_interword_spaces=1"
+                try:
+                    candidate = pytesseract.image_to_string(processed_image, lang=lang, config=cfg)
+                    if len(candidate) > best_len:
+                        best_len = len(candidate)
+                        best_text = candidate
+                        print(f"  > Nuevo mejor candidato: {len(candidate)} chars (lang={lang}, psm={psm})")
+                except Exception as e:
+                    print(f"  x Error con lang={lang}, psm={psm}: {e}")
+
+        text = best_text
+        
+        # If text is still too short, try original image as last resort
         if len(text) < 50:
-            print("Texto procesado muy corto, intentando con spa+eng...")
-            text = pytesseract.image_to_string(processed_image, lang='spa+eng', config=custom_config)
-        
-        # If still too short, try original image as fallback
-        if len(text) < 50:
-            print("Texto aún muy corto, intentando con imagen original...")
-            text = pytesseract.image_to_string(image, lang='spa+eng', config=custom_config)
+            print("Texto procesado muy corto, intentando con imagen original...")
+            try:
+                text = pytesseract.image_to_string(image, lang='spa+eng', config='--oem 1 --psm 6')
+            except Exception as e:
+                print(f"Error con imagen original: {e}")
             
-        print(f"Texto extraído ({len(text)} chars): {text[:200]}...")
+        print(f"Texto extraído final ({len(text)} chars): {text[:200]}...")
         
         # 4. Extract structured data
         amount = extract_amount(text)

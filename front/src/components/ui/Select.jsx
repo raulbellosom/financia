@@ -136,7 +136,7 @@ export function Select({
         </span>
         <ChevronDown
           size={16}
-          className={`text-zinc-400 transition-transform flex-shrink-0 ml-2 ${
+          className={`text-zinc-400 transition-transform shrink-0 ml-2 ${
             isOpen ? "rotate-180" : ""
           }`}
         />
@@ -197,7 +197,7 @@ export function Select({
                     {option.value === value && (
                       <Check
                         size={14}
-                        className="text-emerald-500 ml-3 flex-shrink-0"
+                        className="text-emerald-500 ml-3 shrink-0"
                       />
                     )}
                   </button>
