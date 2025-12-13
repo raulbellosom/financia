@@ -20,7 +20,7 @@ export default defineConfig({
         name: "Financia",
         short_name: "Financia",
         description: "Personal Finance App",
-        theme_color: "#18181b",
+        theme_color: "#10b981",
         background_color: "#18181b",
         display: "standalone",
         start_url: "/",
