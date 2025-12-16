@@ -212,6 +212,13 @@ yieldCalculationBase — Enum(total, fixed) — default: total
 yieldFixedAmount — Float (min: 0) — optional
 lastYieldDate — Datetime — optional
 
+### Nuevos para Belvo (Open Banking)
+
+belvoId — String (36) — unique, optional
+link — Relationship (belvo_links) — optional
+lastSync — Datetime — optional
+balanceType — Enum(current, available) — optional
+
 isArchived — Boolean  
 sortOrder — Integer
 
@@ -283,8 +290,16 @@ installments — Integer (default: 1)
 isPending — Boolean  
 isTransferLeg — Boolean  
 isDraft — Boolean  
-origin — Enum(manual, recurring, ocr, yield)  
+origin — Enum(manual, recurring, ocr, yield, belvo)  
 isDeleted — Boolean
+
+### Nuevos para Belvo
+
+belvoId — String (36) — unique, optional
+merchantName — String — optional
+merchantLogo — String (URL) — optional
+belvoCategory — String — optional
+status — Enum(PENDING, PROCESSED, UNCATEGORIZED) — default: PROCESSED
 
 ### 4.2 Relaciones
 
@@ -327,6 +342,11 @@ description — String
 autoConfirm — Boolean  
 isActive — Boolean
 
+### Nuevos para Belvo
+
+belvoId — String (36) — optional
+averageAmount — Float — optional
+
 ### 5.2 Relaciones
 
 many-to-one hacia perfil, cuenta, categoría
@@ -364,7 +384,31 @@ profile + isDeleted
 
 ---
 
-## 7. Conclusión: ¿Ya está lista la BD?
+## 7. Colección belvo_links — Conexiones Bancarias
+
+### 7.1 Atributos
+
+profile — Relationship (users_info)
+belvoId — String (36) — required, unique
+institution — String — required
+status — Enum(valid, invalid, unconfirmed, token_required) — required
+accessMode — Enum(recurrent, single) — required
+lastSync — Datetime — optional
+externalId — String — optional
+
+### 7.2 Relaciones
+
+many-to-one → users_info
+onDelete: cascade
+
+### 7.3 Índices
+
+belvoId (unique)
+profile
+
+---
+
+## 8. Conclusión: ¿Ya está lista la BD?
 
 Sí. Con esta estructura:
 
@@ -374,7 +418,7 @@ Sí. Con esta estructura:
 ✔ Pagos recurrentes reales  
 ✔ OCR con borradores confirmables
 
-# 8. Plan de Implementación (Hoja de Ruta)
+# 9. Plan de Implementación (Hoja de Ruta)
 
 Este plan define los objetivos tangibles para migrar y completar la aplicación según el modelo v2 descrito anteriormente.
 

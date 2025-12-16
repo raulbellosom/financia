@@ -37,7 +37,9 @@
     "paymentHistory": "Payment History",
     "nextPayment": "Next Payment",
     "refreshed": "Data refreshed",
-    "refreshError": "Failed to refresh data"
+    "refreshError": "Failed to refresh data",
+    "connectBank": "Connect Bank",
+    "connecting": "Connecting..."
   },
   "nav": {
     "dashboard": "Dashboard",

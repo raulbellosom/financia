@@ -37,7 +37,9 @@
     "paymentHistory": "Historial de Pagos",
     "nextPayment": "Próximo Pago",
     "refreshed": "Datos actualizados",
-    "refreshError": "Error al actualizar datos"
+    "refreshError": "Error al actualizar datos",
+    "connectBank": "Conectar Banco",
+    "connecting": "Conectando..."
   },
   "nav": {
     "dashboard": "Panel",

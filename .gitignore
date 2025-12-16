@@ -1,1 +1,6 @@
 ocr/.env
+functions/*.zip
+functions/.env
+functions/**/*.tar
+functions/**/*.tar.gz
+functions/**/node_modules/

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAccounts } from "../hooks/useAccounts";
+import LinkBankButton from "../components/LinkBankButton";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
@@ -259,13 +260,16 @@ export default function Accounts() {
       subtitle={t("accounts.subtitle")}
       icon={Wallet}
       action={
-        <Button
-          onClick={handleOpenCreate}
-          className="bg-emerald-500 hover:bg-emerald-600 text-zinc-950"
-        >
-          <Plus size={20} className="mr-2" />
-          {t("accounts.addAccount")}
-        </Button>
+        <div className="flex gap-2">
+          <LinkBankButton onSuccess={() => window.location.reload()} />
+          <Button
+            onClick={handleOpenCreate}
+            className="bg-emerald-500 hover:bg-emerald-600 text-zinc-950"
+          >
+            <Plus size={20} className="mr-2" />
+            {t("accounts.addAccount")}
+          </Button>
+        </div>
       }
     >
       {isLoading ? (
