@@ -1,14 +1,23 @@
 import { createContext, useContext, useEffect } from "react";
 import client, { account, databases } from "../lib/appwrite";
 import { ID, Query } from "appwrite";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "../lib/queryClient";
 import { APPWRITE_CONFIG } from "../lib/constants";
 import i18n from "../i18n";
 
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 
-const AuthContext = createContext();
+const AuthContext = createContext({
+  user: null,
+  userInfo: null,
+  loading: true,
+  userInfoLoading: true,
+  login: async () => ({ success: false, errorKey: "auth.errorLogin" }),
+  register: async () => ({ success: false, errorKey: "auth.errorRegister" }),
+  logout: async () => {},
+  changeUserLanguage: async () => {},
+});
 
 export const useAuth = () => {
   return useContext(AuthContext);
@@ -82,32 +91,46 @@ export const AuthProvider = ({ children }) => {
     }
   }, [userInfo]);
 
-  // Mutation to create user info if missing
-  const createUserInfoMutation = useMutation({
-    mutationFn: async (userData) => {
-      return await databases.createDocument(
-        APPWRITE_CONFIG.DATABASE_ID,
-        APPWRITE_CONFIG.USERS_INFO_COLLECTION_ID,
-        ID.unique(),
-        {
-          authUserId: userData.$id,
-          country: "MX",
-          defaultCurrency: "MXN",
-          language: "es-MX",
-          onboardingDone: false,
-          role: "user",
-        }
-      );
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(["userInfo"]);
-    },
-  });
-
+  // Hard-block access if profile is missing or email is not verified.
   useEffect(() => {
-    if (user && !userInfo && !userInfoLoading) {
-      createUserInfoMutation.mutate(user);
-    }
+    const enforceVerification = async () => {
+      if (!user || userInfoLoading) return;
+
+      const isVerified = userInfo?.verified_email === true;
+      if (!isVerified) {
+        try {
+          // If profile is missing, trigger a repair on the backend (email-server)
+          if (!userInfo) {
+            const emailServerUrl =
+              import.meta.env.VITE_EMAIL_SERVER_URL || "http://localhost:3001";
+            const lang = i18n.language || "es";
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+            await fetch(`${emailServerUrl}/ensure-user-info-on-login`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                authUserId: user.$id,
+                lang,
+                timezone,
+              }),
+            }).catch(() => {
+              // ignore
+            });
+          }
+        } finally {
+          try {
+            await account.deleteSession("current");
+          } catch {
+            // ignore
+          }
+          queryClient.setQueryData(["auth"], null);
+          queryClient.setQueryData(["userInfo", user?.$id], null);
+        }
+      }
+    };
+
+    enforceVerification();
   }, [user, userInfo, userInfoLoading]);
 
   const changeUserLanguage = async (langCode) => {
@@ -135,33 +158,96 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       await account.createEmailPasswordSession(email, password);
-      const user = await account.get();
+      const authedUser = await account.get();
+
+      const emailServerUrl =
+        import.meta.env.VITE_EMAIL_SERVER_URL || "http://localhost:3001";
+      const lang = i18n.language || "es";
+      let verificationLink = `${window.location.origin}/verify-email?userId=${authedUser.$id}`;
+      let userInfoId;
 
       // Check verified_email in users_info
       try {
         const response = await databases.listDocuments(
           APPWRITE_CONFIG.DATABASE_ID,
           APPWRITE_CONFIG.USERS_INFO_COLLECTION_ID,
-          [Query.equal("authUserId", user.$id)]
+          [Query.equal("authUserId", authedUser.$id)]
         );
 
-        if (response.documents.length > 0) {
-          const userInfoDoc = response.documents[0];
-          if (!userInfoDoc.verified_email) {
-            await account.deleteSession("current");
-            return {
-              success: false,
-              error: t("auth.emailNotVerified"),
-            };
+        if (response.documents.length === 0) {
+          // Profile missing -> trigger repair and block
+          const ensureRes = await fetch(
+            `${emailServerUrl}/ensure-user-info-on-login`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                authUserId: authedUser.$id,
+                lang,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              }),
+            }
+          ).catch(() => {
+            // ignore
+          });
+
+          if (ensureRes?.ok) {
+            try {
+              const json = await ensureRes.json();
+              if (json?.id) {
+                userInfoId = json.id;
+                verificationLink = `${window.location.origin}/verify-email?userInfoId=${json.id}`;
+              }
+            } catch {
+              // ignore
+            }
           }
+
+          await account.deleteSession("current");
+          return {
+            success: false,
+            errorKey: "auth.emailNotVerified",
+            verification: {
+              userId: authedUser.$id,
+              userInfoId,
+              email: authedUser.email,
+              name: authedUser.name,
+              verificationLink,
+            },
+          };
+        }
+
+        const userInfoDoc = response.documents[0];
+        userInfoId = userInfoDoc?.$id;
+        if (userInfoId) {
+          verificationLink = `${window.location.origin}/verify-email?userInfoId=${userInfoId}`;
+        }
+        if (userInfoDoc?.verified_email !== true) {
+          await account.deleteSession("current");
+          return {
+            success: false,
+            errorKey: "auth.emailNotVerified",
+            verification: {
+              userId: authedUser.$id,
+              userInfoId,
+              email: authedUser.email,
+              name: authedUser.name,
+              verificationLink,
+            },
+          };
         }
       } catch (dbError) {
         console.error("Failed to check verification status", dbError);
-        // If we can't check, we might want to allow login or block it.
-        // For security, maybe block? But if DB is down...
-        // Let's assume if we can't check, we proceed (or block if strict).
-        // User asked to "no permitas... si no ha verificado".
-        // If we can't verify, we shouldn't allow.
+        // If we can't verify, do not allow login (business rule).
+        try {
+          await account.deleteSession("current");
+        } catch {
+          // ignore
+        }
+        return {
+          success: false,
+          errorKey: "auth.errorLogin",
+        };
       }
 
       await refetchUser();
@@ -171,13 +257,18 @@ export const AuthProvider = ({ children }) => {
       if (error.code === 429) {
         return {
           success: false,
-          error: t(
-            "auth.rateLimitExceeded",
-            "Too many attempts. Please try again later."
-          ),
+          errorKey: "auth.rateLimitExceeded",
         };
       }
-      return { success: false, error: error.message };
+
+      if (error?.type === "user_invalid_credentials" || error?.code === 401) {
+        return {
+          success: false,
+          errorKey: "auth.invalidCredentials",
+        };
+      }
+
+      return { success: false, errorKey: "auth.errorLogin" };
     }
   };
 
@@ -194,12 +285,13 @@ export const AuthProvider = ({ children }) => {
         // Get user timezone
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-        await databases.createDocument(
+        const createdUserInfo = await databases.createDocument(
           APPWRITE_CONFIG.DATABASE_ID,
           APPWRITE_CONFIG.USERS_INFO_COLLECTION_ID,
           ID.unique(),
           {
             authUserId: userId,
+            email: email, // Save email to users_info as requested
             country: "MX",
             defaultCurrency: "MXN",
             language: i18n.language || "es-MX",
@@ -212,39 +304,51 @@ export const AuthProvider = ({ children }) => {
             timezone: timezone, // Save IANA timezone (e.g., "America/Mexico_City")
           }
         );
+
+        // Send verification email via custom server
+        try {
+          const emailServerUrl =
+            import.meta.env.VITE_EMAIL_SERVER_URL || "http://localhost:3001";
+          const verificationLink = `${window.location.origin}/verify-email?userInfoId=${createdUserInfo.$id}`;
+          const lang = i18n.language || "es";
+
+          await fetch(`${emailServerUrl}/send-verification`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email,
+              name: fullName,
+              verificationLink,
+              lang,
+            }),
+          });
+        } catch (error) {
+          console.error("Failed to send verification email", error);
+          // Don't block registration success if email fails
+        }
       } catch (dbError) {
         console.error("Failed to create user info document", dbError);
         // If this fails, login might fail later. But we proceed.
       }
 
-      // Send verification email via custom server
-      try {
-        const emailServerUrl =
-          import.meta.env.VITE_EMAIL_SERVER_URL || "http://localhost:3001";
-        const verificationLink = `${window.location.origin}/verify-email?userId=${userId}`;
-        const lang = i18n.language || "es";
-
-        await fetch(`${emailServerUrl}/send-verification`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            name: fullName,
-            verificationLink,
-            lang,
-          }),
-        });
-      } catch (error) {
-        console.error("Failed to send verification email", error);
-        // Don't block registration success if email fails, but warn
+      await account.deleteSession("current");
+      return { success: true, requireVerification: true, userId };
+    } catch (error) {
+      if (error?.code === 409) {
+        return {
+          success: false,
+          errorKey: "auth.userAlreadyExists",
+          code: 409,
+        };
       }
 
-      await account.deleteSession("current");
-      return { success: true, requireVerification: true };
-    } catch (error) {
-      return { success: false, error: error.message, code: error.code };
+      return {
+        success: false,
+        errorKey: "auth.errorRegister",
+        code: error?.code,
+      };
     }
   };
 
@@ -264,6 +368,7 @@ export const AuthProvider = ({ children }) => {
     user,
     userInfo,
     loading,
+    userInfoLoading,
     login,
     register,
     logout,

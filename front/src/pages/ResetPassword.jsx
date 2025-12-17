@@ -40,7 +40,7 @@ export default function ResetPassword() {
         }),
       });
 
-      const data = await response.json();
+      const _data = await response.json();
 
       if (response.ok) {
         toast.success(
@@ -48,9 +48,7 @@ export default function ResetPassword() {
         );
         navigate("/login");
       } else {
-        toast.error(
-          data.error || t("auth.passwordResetError", "Failed to reset password")
-        );
+        toast.error(t("auth.passwordResetError", "Failed to reset password"));
       }
     } catch (error) {
       console.error("Error resetting password:", error);

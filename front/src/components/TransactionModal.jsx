@@ -4,9 +4,11 @@ import { Input } from "./Input";
 import { Button } from "./ui/Button";
 import { Select } from "./ui/Select";
 import { DatePicker } from "./ui/DatePicker";
+import { MoneyInput } from "./ui/MoneyInput";
 import { useTransactions } from "../hooks/useTransactions";
 import { useAccounts } from "../hooks/useAccounts";
 import { useCategories } from "../hooks/useCategories";
+// import { useInstallmentPlans } from "../hooks/useInstallmentPlans";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
@@ -17,8 +19,9 @@ export default function TransactionModal({ isOpen, onClose, initialDate }) {
   const { createTransaction, isCreating } = useTransactions();
   const { accounts } = useAccounts();
   const { categories } = useCategories();
+  // const { plans } = useInstallmentPlans();
   const { userInfo } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const getInitialDate = () => {
     if (initialDate) {
@@ -36,6 +39,8 @@ export default function TransactionModal({ isOpen, onClose, initialDate }) {
     account: "",
     category: "",
     installments: 1,
+    installmentPlan: "",
+    installmentNumber: "",
   });
 
   // Update date when initialDate changes
@@ -51,6 +56,9 @@ export default function TransactionModal({ isOpen, onClose, initialDate }) {
 
   const selectedAccount = accounts.find((a) => a.$id === formData.account);
   const isCreditCard = selectedAccount?.type === "credit";
+  // const activePlans = plans.filter(
+  //   (p) => p.account === formData.account && p.status === "active"
+  // );
 
   if (!isOpen) return null;
 
@@ -67,6 +75,12 @@ export default function TransactionModal({ isOpen, onClose, initialDate }) {
         amount: parseFloat(formData.amount),
         date: localDate.toISOString(),
         installments: parseInt(formData.installments) || 1,
+        installmentPlan: formData.installmentPlan || null,
+        installmentNumber: formData.installmentNumber
+          ? parseInt(formData.installmentNumber)
+          : null,
+        toAccount:
+          formData.type === "transfer" ? formData.toAccount : undefined,
       });
       toast.success(t("components.transactionModal.success"));
       // Reset form
@@ -106,6 +120,13 @@ export default function TransactionModal({ isOpen, onClose, initialDate }) {
     label: cat.name,
   }));
 
+  const filteredCategoryOptions = categories
+    .filter((cat) => cat.type === formData.type)
+    .map((cat) => ({
+      value: cat.$id,
+      label: cat.name,
+    }));
+
   const installmentOptions = [
     { value: "1", label: "1 (Contado)" },
     { value: "3", label: "3 Meses" },
@@ -130,8 +151,46 @@ export default function TransactionModal({ isOpen, onClose, initialDate }) {
 
         <div className="p-6 overflow-y-auto custom-scrollbar">
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Select
+                label={t("components.transactionModal.type")}
+                value={formData.type}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    type: e.target.value,
+                    category: "",
+                    installmentPlan: "",
+                    installmentNumber: "",
+                  })
+                }
+                options={[
+                  ...typeOptions,
+                  {
+                    value: "transfer",
+                    label: t("transactions.transfer") || "Transferencia",
+                  },
+                ]}
+              />
+
+              <MoneyInput
+                label={t("components.transactionModal.amount")}
+                placeholder="0.00"
+                name="amount"
+                value={formData.amount}
+                onChange={handleChange}
+                required
+                currency={selectedAccount?.currency || "MXN"}
+                locale={i18n.language?.startsWith("en") ? "en-US" : "es-MX"}
+              />
+            </div>
+
             <Select
-              label={t("components.transactionModal.account")}
+              label={
+                formData.type === "transfer"
+                  ? t("transactions.fromAccount") || "Cuenta Origen"
+                  : t("components.transactionModal.account")
+              }
               value={formData.account}
               onChange={(e) =>
                 setFormData({ ...formData, account: e.target.value })
@@ -140,6 +199,48 @@ export default function TransactionModal({ isOpen, onClose, initialDate }) {
               placeholder={t("components.transactionModal.selectAccount")}
             />
 
+            {formData.type === "transfer" && (
+              <Select
+                label={t("transactions.toAccount") || "Cuenta Destino"}
+                value={formData.toAccount || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, toAccount: e.target.value })
+                }
+                options={accountOptions.filter(
+                  (a) => a.value !== formData.account
+                )}
+                placeholder={t("components.transactionModal.selectAccount")}
+              />
+            )}
+
+            <Input
+              label={t("components.transactionModal.description")}
+              placeholder={t("components.transactionModal.descPlaceholder")}
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              required
+            />
+
+            {formData.type !== "transfer" && (
+              <Select
+                label={t("components.transactionModal.category") || "Categoría"}
+                value={formData.category}
+                onChange={(e) =>
+                  setFormData({ ...formData, category: e.target.value })
+                }
+                options={filteredCategoryOptions}
+                placeholder={
+                  t("components.transactionModal.selectCategory") ||
+                  "Seleccionar categoría"
+                }
+              />
+            )}
+
+            {/* MSI Plan Link Support - Temporarily removed during refactor
+                Per new architecture, monthly payments should be generated automatically
+                or traced via different mechanism.
+            */}
             {isCreditCard && formData.type === "expense" && (
               <Select
                 label={
@@ -155,51 +256,6 @@ export default function TransactionModal({ isOpen, onClose, initialDate }) {
                 options={installmentOptions}
               />
             )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Select
-                label={t("components.transactionModal.type")}
-                value={formData.type}
-                onChange={(e) =>
-                  setFormData({ ...formData, type: e.target.value })
-                }
-                options={typeOptions}
-              />
-
-              <Input
-                label={t("components.transactionModal.amount")}
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                name="amount"
-                value={formData.amount}
-                onChange={handleChange}
-                required
-                min="0.01"
-              />
-            </div>
-
-            <Input
-              label={t("components.transactionModal.description")}
-              placeholder={t("components.transactionModal.descPlaceholder")}
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              required
-            />
-
-            <Select
-              label={t("components.transactionModal.category") || "Categoría"}
-              value={formData.category}
-              onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value })
-              }
-              options={categoryOptions}
-              placeholder={
-                t("components.transactionModal.selectCategory") ||
-                "Seleccionar categoría"
-              }
-            />
 
             <DatePicker
               label={t("components.transactionModal.date")}

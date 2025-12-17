@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { Button } from "./Button";
 import { Select } from "./ui/Select";
+import { Input } from "./ui/Input";
+import { MoneyInput } from "./ui/MoneyInput";
 import { useTransactions } from "../hooks/useTransactions";
 import { useCategories } from "../hooks/useCategories";
 import { useTranslation } from "react-i18next";
@@ -28,12 +30,14 @@ export default function TransactionDetailsModal({
   readOnly = false,
   allowDateEdit = false,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { formatDate } = useDateFormatter();
   const { updateTransaction } = useTransactions();
   const { categories } = useCategories();
 
   const [note, setNote] = useState("");
+  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [date, setDate] = useState("");
   const [recurringCount, setRecurringCount] = useState(null);
@@ -44,6 +48,14 @@ export default function TransactionDetailsModal({
   useEffect(() => {
     if (transaction) {
       setNote(transaction.notes || "");
+      setDescription(transaction.description || "");
+      setAmount(
+        transaction.amount != null && Number.isFinite(transaction.amount)
+          ? String(transaction.amount)
+          : transaction.amount != null
+          ? String(transaction.amount)
+          : ""
+      );
       setDate(
         transaction.date
           ? new Date(transaction.date).toISOString().split("T")[0]
@@ -121,7 +133,47 @@ export default function TransactionDetailsModal({
     );
   };
 
-  const canEditDate = allowDateEdit && isCreatedToday() && !readOnly;
+  const effectiveAccount =
+    account ||
+    (transaction?.account && transaction.account.$id
+      ? transaction.account
+      : null);
+
+  const canEditTransaction = () => {
+    if (readOnly) return false;
+    if (!transaction) return false;
+    if (transaction.isDraft) return true;
+
+    const txDate = new Date(transaction.date);
+    const now = new Date();
+
+    // 1) Same month
+    const isSameMonth =
+      txDate.getMonth() === now.getMonth() &&
+      txDate.getFullYear() === now.getFullYear();
+    if (!isSameMonth) return false;
+
+    // 2) For credit cards: before cutoff
+    if (effectiveAccount?.type === "credit" && effectiveAccount.billingDay) {
+      const billingDay = parseInt(effectiveAccount.billingDay);
+      let cutoffDate = new Date(txDate);
+
+      if (txDate.getDate() <= billingDay) {
+        cutoffDate.setDate(billingDay);
+      } else {
+        cutoffDate.setMonth(cutoffDate.getMonth() + 1);
+        cutoffDate.setDate(billingDay);
+      }
+
+      cutoffDate.setHours(23, 59, 59, 999);
+      if (now > cutoffDate) return false;
+    }
+
+    return true;
+  };
+
+  const canEdit = canEditTransaction();
+  const canEditDate = allowDateEdit && isCreatedToday() && canEdit;
 
   const handleSave = async () => {
     try {
@@ -129,6 +181,11 @@ export default function TransactionDetailsModal({
         notes: note,
         category: categoryId || null,
       };
+
+      if (canEdit) {
+        updates.description = description;
+        updates.amount = Number.parseFloat(amount);
+      }
 
       if (canEditDate && date) {
         const [year, month, day] = date.split("-").map(Number);
@@ -151,13 +208,6 @@ export default function TransactionDetailsModal({
 
   if (!isOpen || !transaction) return null;
 
-  // If account is not passed, try to use the one from transaction if populated
-  const effectiveAccount =
-    account ||
-    (transaction.account && transaction.account.$id
-      ? transaction.account
-      : null);
-
   const msiStatus =
     effectiveAccount && transaction.installments > 1
       ? calculateInstallmentStatus(transaction, effectiveAccount)
@@ -175,9 +225,9 @@ export default function TransactionDetailsModal({
 
         <div className="mb-6">
           <h2 className="text-xl font-bold text-white mb-1">
-            {transaction.description === "recurring.payment"
+            {description === "recurring.payment"
               ? t("transactions.recurringPayment")
-              : transaction.description || t("common.noDescription")}
+              : description || t("common.noDescription")}
           </h2>
           <p
             className={`text-2xl font-bold ${
@@ -185,13 +235,64 @@ export default function TransactionDetailsModal({
             }`}
           >
             {transaction.type === "income" ? "+" : "-"}$
-            {transaction.amount.toLocaleString("es-MX", {
-              minimumFractionDigits: 2,
-            })}
+            {Number(transaction.amount).toLocaleString(
+              i18n.language?.startsWith("en") ? "en-US" : "es-MX",
+              { minimumFractionDigits: 2 }
+            )}
           </p>
         </div>
 
         <div className="space-y-6">
+          {/* Editable fields (amount + description) */}
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              {canEdit ? (
+                <MoneyInput
+                  label={t("components.transactionModal.amount")}
+                  name="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  currency={
+                    effectiveAccount?.currency || transaction.currency || "MXN"
+                  }
+                  locale={i18n.language?.startsWith("en") ? "en-US" : "es-MX"}
+                />
+              ) : (
+                <div className="bg-zinc-800/50 p-3 rounded-xl">
+                  <div className="flex items-center gap-2 text-zinc-400 text-xs mb-1">
+                    <span>{t("components.transactionModal.amount")}</span>
+                  </div>
+                  <p className="text-zinc-200 font-medium">
+                    {Number(transaction.amount).toLocaleString(
+                      i18n.language?.startsWith("en") ? "en-US" : "es-MX",
+                      { minimumFractionDigits: 2 }
+                    )}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div>
+              {canEdit ? (
+                <Input
+                  label={t("components.transactionModal.description")}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder={t("components.transactionModal.descPlaceholder")}
+                />
+              ) : (
+                <div className="bg-zinc-800/50 p-3 rounded-xl">
+                  <div className="flex items-center gap-2 text-zinc-400 text-xs mb-1">
+                    <span>{t("components.transactionModal.description")}</span>
+                  </div>
+                  <p className="text-zinc-200 font-medium">
+                    {transaction.description || t("common.noDescription")}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Basic Info */}
           <div className="grid grid-cols-1 gap-4">
             <div className="bg-zinc-800/50 p-3 rounded-xl">

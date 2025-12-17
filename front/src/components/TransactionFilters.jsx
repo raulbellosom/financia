@@ -26,9 +26,13 @@ export default function TransactionFilters({
     })),
   ];
 
+  const filteredCategories = type
+    ? categories.filter((c) => c.type === type)
+    : categories;
+
   const categoryOptions = [
     { value: "", label: t("reports.allCategories") },
-    ...categories.map((cat) => ({
+    ...filteredCategories.map((cat) => ({
       value: cat.$id,
       label: cat.name,
     })),

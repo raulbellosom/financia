@@ -16,6 +16,8 @@ import {
   X,
   Download,
   RefreshCw,
+  PieChart,
+  Bell,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -23,6 +25,7 @@ import { useLocation, Link } from "react-router-dom";
 import Logo from "./Logo";
 import { useRuleProcessor } from "../hooks/useRuleProcessor";
 import { useYieldProcessor } from "../hooks/useYieldProcessor";
+import { useAlarms } from "../hooks/useAlarms";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -45,6 +48,46 @@ export default function Layout({ children }) {
   useRuleProcessor();
   // Process investment yields
   useYieldProcessor();
+
+  // Alarms check
+  const { alarms } = useAlarms();
+  useEffect(() => {
+    if (alarms && alarms.length > 0) {
+      const today = new Date().toISOString().split("T")[0];
+      const dueAlarms = alarms.filter(
+        (a) => a.enabled && a.date && a.date.split("T")[0] <= today
+      );
+
+      if (dueAlarms.length > 0) {
+        // Simple toast for now. Could be improved to show only once per session/day.
+        // For simulation purposes, just show it.
+        // Use a flag to prevent spamming on every render if not careful, but useEffect dependency is alarms.
+        // Since alarms comes from Query, it stabilizes.
+
+        // We can check if we already showed it this session.
+        const notificationKey = `alarms-notified-${today}`;
+        if (!sessionStorage.getItem(notificationKey)) {
+          toast(
+            (t) => (
+              <div>
+                <p className="font-bold">
+                  Tienes {dueAlarms.length} alarmas pendientes!
+                </p>
+                <ul className="text-sm list-disc pl-4 mt-1">
+                  {dueAlarms.slice(0, 3).map((a) => (
+                    <li key={a.$id}>{a.title}</li>
+                  ))}
+                  {dueAlarms.length > 3 && <li>...</li>}
+                </ul>
+              </div>
+            ),
+            { duration: 6000, icon: <Bell className="text-orange-500" /> }
+          );
+          sessionStorage.setItem(notificationKey, "true");
+        }
+      }
+    }
+  }, [alarms]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -194,6 +237,8 @@ export default function Layout({ children }) {
     { name: t("nav.accounts"), href: "/accounts", icon: Wallet },
     { name: t("nav.categories"), href: "/categories", icon: Tags },
     { name: t("nav.recurring"), href: "/recurring-rules", icon: CalendarClock },
+    { name: t("nav.msi"), href: "/installments", icon: PieChart },
+    { name: t("nav.alarms") || "Alarmas", href: "/alarms", icon: Bell },
   ];
 
   // Desktop navigation includes Profile

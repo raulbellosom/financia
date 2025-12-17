@@ -6,6 +6,7 @@ import TransactionDetailsModal from "../components/TransactionDetailsModal";
 import DashboardCharts from "../components/DashboardCharts";
 import {
   Wallet,
+  CreditCard,
   TrendingUp,
   TrendingDown,
   Activity,
@@ -18,9 +19,10 @@ import { Button } from "../components/ui/Button";
 import PageLayout from "../components/PageLayout";
 import { useTranslation } from "react-i18next";
 import { useDateFormatter } from "../hooks/useDateFormatter";
+import { formatCurrency } from "../utils/reportUtils";
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, userInfo } = useAuth();
   const { accounts, isLoading: accountsLoading } = useAccounts();
   const { transactions, isLoading: transactionsLoading } = useTransactions(5);
   const { t } = useTranslation();
@@ -29,12 +31,71 @@ export default function Dashboard() {
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
 
-  const totalBalance = accounts.reduce((sum, acc) => {
-    if (acc.type === "credit") {
-      return sum - acc.currentBalance;
+  const defaultCurrency = userInfo?.defaultCurrency || "MXN";
+
+  const sumByCurrency = (predicate, valueSelector) => {
+    return accounts.reduce((accumulator, account) => {
+      if (!predicate(account)) return accumulator;
+      const currency = account.currency || defaultCurrency;
+      const value = valueSelector(account);
+      const numericValue = Number.isFinite(value) ? value : parseFloat(value);
+      accumulator[currency] =
+        (accumulator[currency] || 0) + (numericValue || 0);
+      return accumulator;
+    }, {});
+  };
+
+  const availableByCurrency = sumByCurrency(
+    (acc) => acc.type !== "credit",
+    (acc) => acc.currentBalance
+  );
+
+  const totalCreditLimitByCurrency = sumByCurrency(
+    (acc) => acc.type === "credit",
+    (acc) => acc.creditLimit
+  );
+
+  const totalDebtByCurrency = sumByCurrency(
+    (acc) => acc.type === "credit",
+    (acc) => (acc.currentBalance < 0 ? Math.abs(acc.currentBalance) : 0)
+  );
+
+  const renderCurrencyAmount = (amountsByCurrency, fallbackCurrency) => {
+    const entries = Object.entries(amountsByCurrency)
+      .map(([currency, amount]) => [currency, Number(amount) || 0])
+      .filter(([, amount]) => Math.abs(amount) > 0.0001)
+      .sort(([a], [b]) => a.localeCompare(b));
+
+    if (entries.length === 0) {
+      return (
+        <p className="text-3xl font-bold text-white">
+          {formatCurrency(0, fallbackCurrency)}
+        </p>
+      );
     }
-    return sum + acc.currentBalance;
-  }, 0);
+
+    if (entries.length === 1) {
+      const [currency, amount] = entries[0];
+      return (
+        <p className="text-3xl font-bold text-white">
+          {formatCurrency(amount, currency)}
+        </p>
+      );
+    }
+
+    return (
+      <div className="space-y-1">
+        {entries.map(([currency, amount]) => (
+          <p
+            key={currency}
+            className="text-xl font-bold text-white leading-tight"
+          >
+            {formatCurrency(amount, currency)}
+          </p>
+        ))}
+      </div>
+    );
+  };
 
   const getAccountType = (accountId) => {
     // Handle both expanded object and ID string
@@ -73,23 +134,45 @@ export default function Dashboard() {
       }
     >
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800/50 backdrop-blur-xl">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-zinc-800 rounded-full text-zinc-400">
               <Wallet size={20} />
             </div>
             <span className="text-zinc-400 font-medium">
-              {t("dashboard.totalBalance")}
+              {t("dashboard.available")}
             </span>
           </div>
-          <p className="text-3xl font-bold text-white">
-            {isLoading
-              ? "..."
-              : `$${totalBalance.toLocaleString("es-MX", {
-                  minimumFractionDigits: 2,
-                })}`}
-          </p>
+          {isLoading ? (
+            <p className="text-3xl font-bold text-white">...</p>
+          ) : (
+            renderCurrencyAmount(availableByCurrency, defaultCurrency)
+          )}
+        </div>
+
+        <div className="bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800/50 backdrop-blur-xl">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-blue-500/10 rounded-full text-blue-500">
+              <CreditCard size={20} />
+            </div>
+            <span className="text-zinc-400 font-medium">
+              {t("dashboard.totalDebt")}
+            </span>
+          </div>
+          {isLoading ? (
+            <p className="text-3xl font-bold text-white">...</p>
+          ) : (
+            <div>
+              {renderCurrencyAmount(totalDebtByCurrency, defaultCurrency)}
+              <div className="mt-1 text-xs text-zinc-500">
+                {t("dashboard.totalCreditLimit")}:{" "}
+                {Object.entries(totalCreditLimitByCurrency)
+                  .map(([curr, val]) => formatCurrency(val, curr))
+                  .join(", ")}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800/50 backdrop-blur-xl">

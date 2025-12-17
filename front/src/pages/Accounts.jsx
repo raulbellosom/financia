@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAccounts } from "../hooks/useAccounts";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
+import { MoneyInput } from "../components/ui/MoneyInput";
 import { Select } from "../components/ui/Select";
 import PageLayout from "../components/PageLayout";
 import DeleteConfirmationModal from "../components/ui/DeleteConfirmationModal";
@@ -27,6 +28,7 @@ import {
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { YIELD_CALCULATION_BASE } from "../lib/constants";
+import { COLOR_PALETTE } from "../lib/palette";
 
 const ICONS = [
   { id: "wallet", component: Wallet },
@@ -43,26 +45,7 @@ const ICONS = [
   { id: "safe", component: Lock },
 ];
 
-// Tailwind 500 shades
-const COLORS = [
-  "#10b981", // emerald
-  "#3b82f6", // blue
-  "#6366f1", // indigo
-  "#8b5cf6", // violet
-  "#a855f7", // purple
-  "#d946ef", // fuchsia
-  "#ec4899", // pink
-  "#f43f5e", // rose
-  "#ef4444", // red
-  "#f97316", // orange
-  "#eab308", // yellow
-  "#84cc16", // lime
-  "#14b8a6", // teal
-  "#06b6d4", // cyan
-  "#0ea5e9", // sky
-  "#64748b", // slate
-  "#71717a", // zinc
-];
+const COLORS = COLOR_PALETTE;
 
 export default function Accounts() {
   const {
@@ -76,12 +59,13 @@ export default function Accounts() {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [editingAccountSnapshot, setEditingAccountSnapshot] = useState(null);
 
   // Delete state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [accountToDelete, setAccountToDelete] = useState(null);
 
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const initialFormState = {
     name: "",
@@ -105,12 +89,14 @@ export default function Accounts() {
 
   const handleOpenCreate = () => {
     setEditingId(null);
+    setEditingAccountSnapshot(null);
     setFormData(initialFormState);
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (account) => {
     setEditingId(account.$id);
+    setEditingAccountSnapshot(account);
     setFormData({
       name: account.name,
       type: account.type,
@@ -161,9 +147,19 @@ export default function Accounts() {
         icon: formData.icon,
       };
 
-      // Only send initialBalance on creation
-      if (!editingId) {
-        payload.initialBalance = parseFloat(formData.initialBalance) || 0;
+      // Allow editing initialBalance (Task #3 - Option B: adjust currentBalance with delta)
+      const newInitialBalance = parseFloat(formData.initialBalance) || 0;
+      if (editingId) {
+        const oldInitialBalance =
+          parseFloat(editingAccountSnapshot?.initialBalance) || 0;
+        const oldCurrentBalance =
+          parseFloat(editingAccountSnapshot?.currentBalance) || 0;
+        const delta = newInitialBalance - oldInitialBalance;
+
+        payload.initialBalance = newInitialBalance;
+        payload.currentBalance = oldCurrentBalance + delta;
+      } else {
+        payload.initialBalance = newInitialBalance;
       }
 
       // Handle Credit/Debit specific fields
@@ -212,6 +208,7 @@ export default function Accounts() {
       setIsModalOpen(false);
       setFormData(initialFormState);
       setEditingId(null);
+      setEditingAccountSnapshot(null);
     } catch (error) {
       console.error("Error saving account:", error);
       toast.error(
@@ -504,9 +501,7 @@ export default function Accounts() {
                       <label className="block text-sm font-medium text-zinc-400 mb-1">
                         {t("accounts.creditLimitLabel")}
                       </label>
-                      <Input
-                        type="number"
-                        step="0.01"
+                      <MoneyInput
                         placeholder="0.00"
                         value={formData.creditLimit}
                         onChange={(e) =>
@@ -514,6 +509,10 @@ export default function Accounts() {
                             ...formData,
                             creditLimit: e.target.value,
                           })
+                        }
+                        currency={formData.currency || "MXN"}
+                        locale={
+                          i18n.language?.startsWith("en") ? "en-US" : "es-MX"
                         }
                       />
                     </div>
@@ -583,10 +582,7 @@ export default function Accounts() {
                           <label className="block text-sm font-medium text-zinc-400 mb-1">
                             {t("accounts.yieldFixedAmountLabel")}
                           </label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            min="0"
+                          <MoneyInput
                             placeholder="1000.00"
                             value={formData.yieldFixedAmount}
                             onChange={(e) => {
@@ -597,6 +593,12 @@ export default function Accounts() {
                                 yieldFixedAmount: e.target.value,
                               });
                             }}
+                            currency={formData.currency || "MXN"}
+                            locale={
+                              i18n.language?.startsWith("en")
+                                ? "en-US"
+                                : "es-MX"
+                            }
                           />
                         </div>
                       )}
@@ -655,26 +657,24 @@ export default function Accounts() {
                   </div>
                 </div>
 
-                {!editingId && (
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-1">
-                      {t("accounts.initialBalanceLabel")}
-                    </label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      required
-                      placeholder="0.00"
-                      value={formData.initialBalance}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          initialBalance: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                )}
+                <div>
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">
+                    {t("accounts.initialBalanceLabel")}
+                  </label>
+                  <MoneyInput
+                    required
+                    placeholder="0.00"
+                    value={formData.initialBalance}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        initialBalance: e.target.value,
+                      })
+                    }
+                    currency={formData.currency || "MXN"}
+                    locale={i18n.language?.startsWith("en") ? "en-US" : "es-MX"}
+                  />
+                </div>
 
                 <div className="pt-2">
                   <Button

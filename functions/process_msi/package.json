@@ -1,0 +1,11 @@
+{
+  "name": "financia-process-msi",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Appwrite Function: process MSI installments",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "dependencies": {
+    "axios": "^1.7.9"
+  }
+}

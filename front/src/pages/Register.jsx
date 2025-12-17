@@ -16,6 +16,7 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [verificationPending, setVerificationPending] = useState(null);
   const { register } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -33,13 +34,25 @@ export default function Register() {
     setLoading(false);
 
     if (result.success) {
-      toast.success(t("auth.accountCreated"));
-      navigate("/login");
+      const fullName = `${firstName} ${lastName}`.trim();
+      const pending = {
+        email,
+        name: fullName,
+        userId: result.userId,
+        createdAt: Date.now(),
+      };
+      localStorage.setItem("verificationPending", JSON.stringify(pending));
+      setVerificationPending(pending);
     } else {
+      if (result.errorKey) {
+        toast.error(t(result.errorKey));
+        return;
+      }
+
       if (result.code === 409) {
-        toast.error(t("auth.userAlreadyExists", "User already exists"));
+        toast.error(t("auth.userAlreadyExists"));
       } else {
-        toast.error(result.error || t("auth.errorRegister"));
+        toast.error(t("auth.errorRegister"));
       }
     }
   };
@@ -48,6 +61,56 @@ export default function Register() {
     const newLang = i18n.language === "en" ? "es" : "en";
     i18n.changeLanguage(newLang);
   };
+
+  if (verificationPending) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 p-4 relative">
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onClick={toggleLanguage}
+          className="absolute top-4 right-4 p-2 rounded-full bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors flex items-center gap-2"
+        >
+          <Languages size={20} />
+          <span className="text-sm font-medium uppercase">
+            {i18n.language === "en" ? "es" : "en"}
+          </span>
+        </motion.button>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md space-y-8"
+        >
+          <div className="text-center space-y-2">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", duration: 0.6, delay: 0.2 }}
+              className="inline-flex items-center justify-center w-20 h-20 mb-4"
+            >
+              <Logo className="w-full h-full" />
+            </motion.div>
+            <h1 className="text-3xl font-bold tracking-tight text-white">
+              {t("auth.checkEmail")}
+            </h1>
+            <p className="text-zinc-400">{t("auth.checkEmailDesc")}</p>
+          </div>
+
+          <div className="bg-zinc-900/50 p-8 rounded-3xl border border-zinc-800/50 backdrop-blur-xl">
+            <Button
+              type="button"
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold"
+              onClick={() => navigate("/login")}
+            >
+              {t("auth.goToLogin")}
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 p-4 relative">

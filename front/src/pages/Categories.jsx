@@ -42,6 +42,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { COLOR_PALETTE } from "../lib/palette";
 
 const ICONS = [
   { id: "wallet", component: Wallet },
@@ -72,17 +73,7 @@ const ICONS = [
   { id: "work", component: Briefcase },
 ];
 
-const COLORS = [
-  "#10b981", // emerald
-  "#3b82f6", // blue
-  "#6366f1", // indigo
-  "#a855f7", // purple
-  "#ec4899", // pink
-  "#f43f5e", // rose
-  "#f97316", // orange
-  "#eab308", // yellow
-  "#71717a", // zinc
-];
+const COLORS = COLOR_PALETTE;
 
 export default function Categories() {
   const {
@@ -105,7 +96,7 @@ export default function Categories() {
   const initialFormState = {
     name: "",
     type: "expense",
-    color: "#10b981",
+    color: COLORS[0],
     icon: "shopping",
   };
 

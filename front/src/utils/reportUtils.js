@@ -18,9 +18,15 @@ export const calculateTotals = (transactions) => {
   transactions.forEach((tx) => {
     const amount = parseFloat(tx.amount) || 0;
 
-    if (tx.type === "income") {
+    if (
+      tx.type === "income" ||
+      (tx.type === "transfer" && tx.transferSide === "incoming")
+    ) {
       totals.income += amount;
-    } else if (tx.type === "expense") {
+    } else if (
+      tx.type === "expense" ||
+      (tx.type === "transfer" && tx.transferSide === "outgoing")
+    ) {
       totals.expenses += amount;
     }
   });
@@ -88,9 +94,15 @@ export const calculateRunningBalance = (transactions, initialBalance = 0) => {
   return transactions.map((tx) => {
     const amount = parseFloat(tx.amount) || 0;
 
-    if (tx.type === "income") {
+    if (
+      tx.type === "income" ||
+      (tx.type === "transfer" && tx.transferSide === "incoming")
+    ) {
       balance += amount;
-    } else if (tx.type === "expense") {
+    } else if (
+      tx.type === "expense" ||
+      (tx.type === "transfer" && tx.transferSide === "outgoing")
+    ) {
       balance -= amount;
     }
 
@@ -183,9 +195,15 @@ export const getSummaryByCategory = (transactions) => {
       };
     }
 
-    if (tx.type === "income") {
+    if (
+      tx.type === "income" ||
+      (tx.type === "transfer" && tx.transferSide === "incoming")
+    ) {
       summary[categoryId].income += amount;
-    } else if (tx.type === "expense") {
+    } else if (
+      tx.type === "expense" ||
+      (tx.type === "transfer" && tx.transferSide === "outgoing")
+    ) {
       summary[categoryId].expenses += amount;
     }
 
@@ -215,9 +233,15 @@ export const getSummaryByAccount = (transactions) => {
       };
     }
 
-    if (tx.type === "income") {
+    if (
+      tx.type === "income" ||
+      (tx.type === "transfer" && tx.transferSide === "incoming")
+    ) {
       summary[accountId].income += amount;
-    } else if (tx.type === "expense") {
+    } else if (
+      tx.type === "expense" ||
+      (tx.type === "transfer" && tx.transferSide === "outgoing")
+    ) {
       summary[accountId].expenses += amount;
     }
 

@@ -3,7 +3,7 @@ const express = require("express");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
-const { Client, Databases, Query, Users } = require("node-appwrite");
+const { Client, Databases, Query, Users, ID } = require("node-appwrite");
 
 // Suppress Appwrite SDK version warning
 const originalWarn = console.warn;
@@ -30,6 +30,11 @@ const databases = new Databases(client);
 const users = new Users(client);
 const JWT_SECRET =
   process.env.JWT_SECRET || "your-secret-key-change-in-production";
+
+// Simple in-memory throttling for resend verification (best-effort)
+const RESEND_VERIFICATION_COOLDOWN_MS =
+  Number(process.env.RESEND_VERIFICATION_COOLDOWN_MS) || 2 * 60 * 1000;
+const resendVerificationLastSent = new Map();
 
 // Middleware
 app.use(cors());
@@ -185,6 +190,54 @@ const translations = {
   },
 };
 
+app.post("/ensure-user-info-on-login", async (req, res) => {
+  const { authUserId, lang = "en", timezone } = req.body;
+
+  if (!authUserId) {
+    return res.status(400).json({ error: "Missing authUserId" });
+  }
+
+  try {
+    const response = await databases.listDocuments(
+      process.env.APPWRITE_DATABASE_ID,
+      process.env.APPWRITE_USERS_INFO_COLLECTION_ID,
+      [Query.equal("authUserId", authUserId)]
+    );
+
+    if (response.documents.length > 0) {
+      return res.status(200).json({ success: true, exists: true });
+    }
+
+    // Minimal safe defaults; verified_email must start false
+    const language = lang === "es" ? "es-MX" : "en-US";
+    const tz = timezone || "America/Mexico_City";
+
+    const created = await databases.createDocument(
+      process.env.APPWRITE_DATABASE_ID,
+      process.env.APPWRITE_USERS_INFO_COLLECTION_ID,
+      ID.unique(),
+      {
+        authUserId,
+        country: "MX",
+        defaultCurrency: "MXN",
+        language,
+        timezone: tz,
+        verified_email: false,
+        verified_phone: false,
+        onboardingDone: false,
+        role: "user",
+      }
+    );
+
+    return res
+      .status(201)
+      .json({ success: true, created: true, id: created.$id });
+  } catch (error) {
+    console.error("Error ensuring user profile:", error);
+    return res.status(500).json({ error: "Failed to ensure user profile" });
+  }
+});
+
 app.post("/send-verification", async (req, res) => {
   const { email, name, verificationLink, lang = "en" } = req.body;
   const t = translations[lang] || translations.en;
@@ -223,7 +276,14 @@ app.post("/send-verification", async (req, res) => {
 });
 
 app.post("/resend-verification", async (req, res) => {
-  const { email, name, verificationLink, lang = "en" } = req.body;
+  const {
+    email,
+    name,
+    verificationLink,
+    lang = "en",
+    userId,
+    userInfoId,
+  } = req.body;
   const t = translations[lang] || translations.en;
 
   if (!email || !verificationLink) {
@@ -251,7 +311,47 @@ app.post("/resend-verification", async (req, res) => {
   };
 
   try {
+    const throttleKey = userInfoId || userId || email;
+    const now = Date.now();
+    const lastSent = resendVerificationLastSent.get(throttleKey);
+    if (lastSent && now - lastSent < RESEND_VERIFICATION_COOLDOWN_MS) {
+      return res.status(429).json({
+        error: "Too many requests",
+        retryAfterMs: RESEND_VERIFICATION_COOLDOWN_MS - (now - lastSent),
+      });
+    }
+
+    // If identifiers are provided, do not resend if already verified
+    if (userInfoId) {
+      try {
+        const doc = await databases.getDocument(
+          process.env.APPWRITE_DATABASE_ID,
+          process.env.APPWRITE_USERS_INFO_COLLECTION_ID,
+          userInfoId
+        );
+        if (doc?.verified_email === true) {
+          return res.status(400).json({ error: "Email already verified" });
+        }
+      } catch {
+        // ignore; fallback checks below if possible
+      }
+    } else if (userId) {
+      const response = await databases.listDocuments(
+        process.env.APPWRITE_DATABASE_ID,
+        process.env.APPWRITE_USERS_INFO_COLLECTION_ID,
+        [Query.equal("authUserId", userId)]
+      );
+
+      if (response.documents.length > 0) {
+        const userInfoDoc = response.documents[0];
+        if (userInfoDoc?.verified_email === true) {
+          return res.status(400).json({ error: "Email already verified" });
+        }
+      }
+    }
+
     const info = await transporter.sendMail(mailOptions);
+    resendVerificationLastSent.set(throttleKey, now);
     console.log("Resend verification email sent: %s", info.messageId);
     res.status(200).json({ success: true, messageId: info.messageId });
   } catch (error) {
@@ -342,25 +442,27 @@ app.post("/reset-password-confirm", async (req, res) => {
 });
 
 app.post("/verify-account", async (req, res) => {
-  const { userId } = req.body;
+  const { userId, userInfoId } = req.body;
 
-  if (!userId) {
-    return res.status(400).json({ error: "Missing userId" });
+  if (!userId && !userInfoId) {
+    return res.status(400).json({ error: "Missing userId or userInfoId" });
   }
 
   try {
-    // Find user info document
-    const response = await databases.listDocuments(
-      process.env.APPWRITE_DATABASE_ID,
-      process.env.APPWRITE_USERS_INFO_COLLECTION_ID,
-      [Query.equal("authUserId", userId)]
-    );
+    let docId = userInfoId;
 
-    if (response.documents.length === 0) {
-      return res.status(404).json({ error: "User profile not found" });
+    // If docId not provided, or invalid, resolve by authUserId
+    if (!docId && userId) {
+      const response = await databases.listDocuments(
+        process.env.APPWRITE_DATABASE_ID,
+        process.env.APPWRITE_USERS_INFO_COLLECTION_ID,
+        [Query.equal("authUserId", userId)]
+      );
+      if (response.documents.length === 0) {
+        return res.status(404).json({ error: "User profile not found" });
+      }
+      docId = response.documents[0].$id;
     }
-
-    const docId = response.documents[0].$id;
 
     // Update verified_email to true
     await databases.updateDocument(
@@ -372,8 +474,8 @@ app.post("/verify-account", async (req, res) => {
       }
     );
 
-    console.log(`User ${userId} verified successfully`);
-    res.status(200).json({ success: true });
+    console.log(`User verified successfully (docId=${docId})`);
+    res.status(200).json({ success: true, docId });
   } catch (error) {
     console.error("Error verifying account:", error);
     res.status(500).json({ error: "Failed to verify account" });

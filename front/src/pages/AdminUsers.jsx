@@ -168,7 +168,7 @@ export default function AdminUsers() {
 
       if (!userInfoResponse.ok) {
         console.error("Failed to create user info");
-        toast.error("User created but failed to set profile info");
+        toast.error(t("admin.profileCreateError"));
       } else {
         toast.success(t("admin.createSuccess"));
       }
@@ -178,7 +178,7 @@ export default function AdminUsers() {
       fetchUsers();
     } catch (error) {
       console.error("Error creating user:", error);
-      toast.error(error.message);
+      toast.error(t("admin.createError"));
     } finally {
       setLoading(false);
     }
@@ -280,7 +280,7 @@ export default function AdminUsers() {
       fetchUsers();
     } catch (error) {
       console.error("Error updating user:", error);
-      toast.error("Failed to update user");
+      toast.error(t("admin.updateError"));
     } finally {
       setLoading(false);
     }
@@ -308,7 +308,7 @@ export default function AdminUsers() {
       setIsEditModalOpen(false);
     } catch (error) {
       console.error("Error verifying email:", error);
-      toast.error("Failed to verify email");
+      toast.error(t("admin.verifiedError"));
     }
   };
 

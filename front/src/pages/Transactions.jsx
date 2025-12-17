@@ -306,6 +306,14 @@ export default function Transactions() {
           setSelectedDetailsTransaction(null);
         }}
         transaction={selectedDetailsTransaction}
+        account={
+          accounts.find(
+            (a) =>
+              a.$id ===
+              (selectedDetailsTransaction?.account?.$id ||
+                selectedDetailsTransaction?.account)
+          ) || null
+        }
         allowDateEdit={true}
       />
     </PageLayout>

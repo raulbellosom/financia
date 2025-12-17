@@ -14,9 +14,10 @@ export default function VerifyEmail() {
   const [status, setStatus] = useState("verifying"); // verifying, success, error
 
   useEffect(() => {
+    const userInfoId = searchParams.get("userInfoId");
     const userId = searchParams.get("userId");
 
-    if (!userId) {
+    if (!userInfoId && !userId) {
       setStatus("error");
       return;
     }
@@ -31,7 +32,7 @@ export default function VerifyEmail() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ userId }),
+          body: JSON.stringify({ userInfoId, userId }),
         });
 
         if (response.ok) {

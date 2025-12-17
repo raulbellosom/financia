@@ -1,0 +1,11 @@
+{
+  "name": "financia-check-alarms",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Appwrite Function: check alarms and send notifications",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "dependencies": {
+    "axios": "^1.7.9"
+  }
+}

@@ -16,6 +16,9 @@ export default function Login() {
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [verifyContext, setVerifyContext] = useState(null);
+  const [resendLoading, setResendLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -30,7 +33,65 @@ export default function Login() {
       toast.success(t("auth.successLogin"));
       navigate("/");
     } else {
-      toast.error(result.error || t("auth.errorLogin"));
+      if (result.errorKey === "auth.emailNotVerified") {
+        setVerifyContext(
+          result.verification || {
+            email,
+            verificationLink: `${window.location.origin}/verify-email`,
+          }
+        );
+        setShowVerifyModal(true);
+        return;
+      }
+
+      const errorMessage = result.errorKey
+        ? t(result.errorKey)
+        : t("auth.errorLogin");
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!verifyContext?.email || !verifyContext?.verificationLink) {
+      toast.error(t("auth.resendError"));
+      return;
+    }
+
+    setResendLoading(true);
+    try {
+      const emailServerUrl =
+        import.meta.env.VITE_EMAIL_SERVER_URL || "http://localhost:3001";
+      const lang = i18n.language || "es";
+
+      const response = await fetch(`${emailServerUrl}/resend-verification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: verifyContext.userId,
+          userInfoId: verifyContext.userInfoId,
+          email: verifyContext.email,
+          name: verifyContext.name,
+          verificationLink: verifyContext.verificationLink,
+          lang,
+        }),
+      });
+
+      if (response.status === 429) {
+        toast.error(t("auth.resendTooSoon"));
+        return;
+      }
+
+      if (!response.ok) {
+        toast.error(t("auth.resendError"));
+        return;
+      }
+
+      toast.success(t("auth.resendSuccess"));
+    } catch (error) {
+      console.error("Error resending verification email:", error);
+      toast.error(t("auth.resendError"));
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -96,6 +157,49 @@ export default function Login() {
       </motion.button>
 
       <AnimatePresence>
+        {showVerifyModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-xl relative"
+            >
+              <button
+                onClick={() => setShowVerifyModal(false)}
+                className="absolute top-4 right-4 text-zinc-400 hover:text-white"
+              >
+                <X size={20} />
+              </button>
+              <h2 className="text-xl font-bold text-white mb-2">
+                {t("auth.emailNotVerifiedTitle")}
+              </h2>
+              <p className="text-zinc-400 mb-6">
+                {t("auth.emailNotVerifiedDesc")}
+              </p>
+
+              <div className="flex justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setShowVerifyModal(false)}
+                  className="text-zinc-400 hover:text-white"
+                >
+                  {t("common.cancel")}
+                </Button>
+                <Button
+                  type="button"
+                  className="bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold"
+                  isLoading={resendLoading}
+                  onClick={handleResendVerification}
+                >
+                  {t("auth.resendVerification")}
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
         {showForgotModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
             <motion.div

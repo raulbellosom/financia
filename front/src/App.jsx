@@ -23,6 +23,8 @@ import AccountDetails from "./pages/AccountDetails";
 import Profile from "./pages/Profile";
 import AdminUsers from "./pages/AdminUsers";
 import Transactions from "./pages/Transactions";
+import InstallmentPlans from "./pages/InstallmentPlans";
+import Alarms from "./pages/Alarms";
 import CalendarView from "./pages/CalendarView";
 import Receipts from "./pages/Receipts";
 import Categories from "./pages/Categories";
@@ -56,6 +58,8 @@ function App() {
                 <Route path="/categories" element={<Categories />} />
                 <Route path="/recurring-rules" element={<RecurringRules />} />
                 <Route path="/transactions" element={<Transactions />} />
+                <Route path="/installments" element={<InstallmentPlans />} />
+                <Route path="/alarms" element={<Alarms />} />
                 <Route path="/calendar" element={<CalendarView />} />
                 <Route path="/receipts" element={<Receipts />} />
                 <Route path="/profile" element={<Profile />} />

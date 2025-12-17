@@ -3,6 +3,7 @@ import { X, Check, Trash2, AlertCircle, Copy, Edit2, Save } from "lucide-react";
 import { Button } from "./ui/Button";
 import { Select } from "./ui/Select";
 import { Input } from "./ui/Input";
+import { MoneyInput } from "./ui/MoneyInput";
 import { DatePicker } from "./ui/DatePicker";
 import ImageViewerModal from "./ImageViewerModal";
 import { storage, databases } from "../lib/appwrite";
@@ -23,8 +24,8 @@ export default function ReceiptDetailsModal({
   receipt,
   initialEditMode = false,
 }) {
-  const { t } = useTranslation();
-  const { accounts, updateAccount } = useAccounts();
+  const { t, i18n } = useTranslation();
+  const { accounts } = useAccounts();
   const { categories } = useCategories();
   const { confirmDraft, deleteReceipt } = useReceipts();
   const { createTransaction, updateTransaction } = useTransactions();
@@ -147,8 +148,6 @@ export default function ReceiptDetailsModal({
         } else {
           // Update Confirmed Transaction
           const newAmount = parseFloat(formData.amount);
-          const oldAmount = transaction.amount;
-          const amountDiff = newAmount - oldAmount;
 
           const [year, month, day] = formData.date.split("-").map(Number);
           // Use UTC noon to avoid timezone shifts
@@ -165,35 +164,6 @@ export default function ReceiptDetailsModal({
               amount: newAmount,
             },
           });
-
-          // 2. Update Balance if amount changed
-          if (Math.abs(amountDiff) > 0.001) {
-            const account = accounts.find((a) => a.$id === transaction.account);
-            if (account) {
-              let newBalance = account.currentBalance;
-
-              if (account.type === "credit") {
-                // Credit Card: Expense increases debt (positive balance)
-                if (transaction.type === "expense") {
-                  newBalance += amountDiff;
-                } else {
-                  newBalance -= amountDiff;
-                }
-              } else {
-                // Asset: Expense decreases balance
-                if (transaction.type === "expense") {
-                  newBalance -= amountDiff;
-                } else {
-                  newBalance += amountDiff;
-                }
-              }
-
-              await updateAccount({
-                id: account.$id,
-                data: { currentBalance: newBalance },
-              });
-            }
-          }
 
           toast.success(t("common.saved"));
           setIsEditing(false);
@@ -518,14 +488,14 @@ export default function ReceiptDetailsModal({
                   <label className="block text-sm text-zinc-400 mb-2">
                     {t("receipts.amount")} *
                   </label>
-                  <Input
-                    type="number"
-                    step="0.01"
+                  <MoneyInput
                     value={formData.amount}
                     onChange={(e) =>
                       setFormData({ ...formData, amount: e.target.value })
                     }
                     placeholder="0.00"
+                    currency={selectedAccount?.currency || "MXN"}
+                    locale={i18n.language?.startsWith("en") ? "en-US" : "es-MX"}
                     disabled={
                       transaction &&
                       !transaction.isDraft &&
